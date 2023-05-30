@@ -38,8 +38,6 @@ namespace FileProcessor
                 long fileSize = fileInfo.Length;
                 reverserData.ExtensionType = fileInfo.Extension;
 
-                Encoding EncodingType = EncodingHelper.DetectEncoding(fileInfo);
-
                 reverserData.OutputFile = reverserData.OutputFile != ""
                                    ? reverserData.OutputFile
                                    : Path.GetDirectoryName(reverserData.InputFile) + "/out_put_" + inputFileName + "." + reverserData.ExtensionType;
@@ -71,11 +69,11 @@ namespace FileProcessor
                         // Step 5d: Call the function for archiving and writing the reversed text portion
                         if(threadCount > 1)
                         {
-                            ArchiverHelper.WriteInTempFile(reversedText, reverserData.ExtensionType, EncodingType, startPosition, endPosition);
+                            ArchiverHelper.WriteInTempFile(reversedText, reverserData.ExtensionType, startPosition, endPosition);
                         }
                         else
                         {
-                            ArchiverHelper.ArchiveAndWrite(reversedText, reverserData.ExtensionType, EncodingType, reverserData.ArchiveType, reverserData.OutputFile, out compresionResult);
+                            ArchiverHelper.ArchiveAndWrite(reversedText, reverserData.ExtensionType, reverserData.ArchiveType, reverserData.OutputFile, out compresionResult);
                         }
                         
                         totalLexemeCount += lexemeCount;
@@ -105,7 +103,7 @@ namespace FileProcessor
                 //Merge all portions of the text
                 if (threadCount > 1)
                 {
-                    ArchiverHelper.ArchiveAndWriteParalel(reverserData.ArchiveType, reverserData.OutputFile, reverserData.ExtensionType, EncodingType, out compresionResult);
+                    ArchiverHelper.ArchiveAndWriteParalel(reverserData.ArchiveType, reverserData.OutputFile, reverserData.ExtensionType, out compresionResult);
                 }
                 // Step 9: Calculate the total lexeme count and total time taken
                 // Stop the stopwatch      
