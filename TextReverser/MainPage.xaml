@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage 
+    x:Class="TextReverser.MainPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewmodel="clr-namespace:TextReverser.ViewModel"
+    xmlns:converters="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
+    xmlns:controls="clr-namespace:Microsoft.Maui.Controls;assembly=Microsoft.Maui.Controls"
+    xmlns:customControls="clr-namespace:TextReverser.CustomControl"
+    Title="Text Reverser"
+    x:DataType="viewmodel:ReverserDataViewModel">
+
+    <ScrollView>
+        <VerticalStackLayout
+            Spacing="25"
+            Padding="30,0"
+            VerticalOptions="Center">
+
+            <Label
+                Text="Step 1: Select Reverse Type"
+                SemanticProperties.HeadingLevel="Level1"
+                FontSize="32"
+                HorizontalOptions="Center" />
+
+            <HorizontalStackLayout
+                HorizontalOptions="Center"
+                >
+                <Picker 
+                x:Name="reverseTypePicker" 
+                Title="Reverse Type"
+                HorizontalOptions="Center"
+                SelectedItem="{Binding ReverserData.ReverseType}" >
+                    <Picker.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>Char</x:String>
+                            <x:String>Word</x:String>
+                            <x:String>Sentence</x:String>
+                        </x:Array>
+                    </Picker.ItemsSource>
+                </Picker>
+                <VerticalStackLayout>
+                    <Label
+                        Padding="30,0,0,0"
+                        HorizontalOptions="Center"
+                        Text="Delete signs"/>
+                    <CheckBox 
+                    HorizontalOptions="Center"
+                    x:Name="HideButtonCheckBox" 
+                    IsChecked="{Binding ReverserData.RemoveSigns}"/>
+                </VerticalStackLayout>
+                
+            </HorizontalStackLayout>
+            <Label
+                Text="Step 2: Select Archived Type (Optional)"
+                SemanticProperties.HeadingLevel="Level1"
+                FontSize="32"
+                HorizontalOptions="Center" />
+
+            <Picker 
+                x:Name="archiveTypePicker" 
+                Title="Archive Type"
+                HorizontalOptions="Center"
+                SelectedItem="{Binding ReverserData.ArchiveType}">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>zip</x:String>
+                        <x:String>7z</x:String>
+                        <x:String>none</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+
+            <Label
+                Text="Step 3: Select Input File or select a folder with files"
+                SemanticProperties.HeadingLevel="Level1"
+                FontSize="32"
+                HorizontalOptions="Center" />
+            <HorizontalStackLayout
+                HorizontalOptions="Center">
+                <Button
+                    x:Name="SelectInputFileBtn"
+                    Text="Browse the file"
+                    SemanticProperties.Hint="Counts the number of times you click"
+                    Command="{Binding SelectInputFileCommand}"
+                    HorizontalOptions="Center" />
+                <Label x:Name="inputFileLabel" Text="{Binding InputFileNameText}" TextColor="White"/>
+                <Button
+                    x:Name="SelectInputDirectoryBtn"
+                    Text="Browse the folder"
+                    SemanticProperties.Hint="Counts the number of times you click"
+                    Command="{Binding SelectInputDirectoryCommand}"
+                    HorizontalOptions="Center" />
+                <Label x:Name="inputDirectoryLabel" Text="{Binding InputDirectoryNameText}" TextColor="White"/>
+            </HorizontalStackLayout>
+
+            <Label
+                Text="Step 4: Select Output File (Optional)"
+                SemanticProperties.HeadingLevel="Level2"
+                SemanticProperties.Description="Output File name"
+                FontSize="32"
+                HorizontalOptions="Center" />
+
+            <Button
+                x:Name="SelectOutputFileBtn"
+                Text="Browse"
+                SemanticProperties.Hint="Counts the number of times you click"
+                Command="{Binding SelectOutputFileCommand}"
+                HorizontalOptions="Center" />
+            <Label x:Name="outputFileLabel" Text="{Binding OutputFileNameText}" TextColor="White"/>
+            
+            <Label
+                Text="Step 5: Start Processing"
+                SemanticProperties.HeadingLevel="Level1"
+                FontSize="32"
+                HorizontalOptions="Center" />
+            <controls:ProgressBar 
+                x:Name="ProgressBar" 
+                Progress="{Binding Progress}" 
+                ProgressColor="Blue" 
+                WidthRequest="200" 
+                HeightRequest="20"/>
+
+            <HorizontalStackLayout
+                HorizontalOptions="Center">
+                <Button 
+                x:Name="StartFileProcessingBtn"
+                Text="Start File Processing" 
+                Command="{Binding StartFileProcessingCommand}" 
+                FontSize="24" 
+                HorizontalOptions="Center" />
+                
+                <Button 
+                x:Name="StartDirectoryProcessingBtn"
+                Text="Start Directory Processing" 
+                Command="{Binding StartDirectoryProcessingCommand}" 
+                FontSize="24" 
+                HorizontalOptions="Center" />
+            </HorizontalStackLayout>
+            
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
+
