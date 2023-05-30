@@ -14,7 +14,6 @@ namespace FileProcessor
         private static readonly int maxThreads = Environment.ProcessorCount; // Number of threads to use for parallel reading
         public static void ProcessFile(ReverseData reverserData)
         {
-            string inputFileName = Path.GetFileName(reverserData.InputFile);
 
             // Step 1: Open the file specified by `fileName`
             if (!File.Exists(reverserData.InputFile))
@@ -38,9 +37,12 @@ namespace FileProcessor
                 long fileSize = fileInfo.Length;
                 reverserData.ExtensionType = fileInfo.Extension;
 
-                reverserData.OutputFile = reverserData.OutputFile != ""
-                                   ? reverserData.OutputFile
-                                   : Path.GetDirectoryName(reverserData.InputFile) + "/out_put_" + inputFileName + "." + reverserData.ExtensionType;
+                //string inputFileName = Path.GetFileNameWithoutExtension(reverserData.InputFile);
+                //reverserData.OutputFile = $"{Path.GetDirectoryName(reverserData.InputFile)}/I{reverserData.ReverseType[0]}_{inputFileName}{reverserData.ExtensionType}";
+
+                //reverserData.OutputFile = reverserData.OutputFile != ""
+                //                   ? reverserData.OutputFile
+                //                   : Path.GetDirectoryName(reverserData.InputFile) + "/out_put_" + inputFileName + "." + reverserData.ExtensionType;
 
                 // Step 3: Calculate the number of threads to be used for parallel reading
                 int threadCount = Math.Min(maxThreads, (int)Math.Ceiling((double)fileSize / bufferSize));
@@ -73,7 +75,7 @@ namespace FileProcessor
                         }
                         else
                         {
-                            ArchiverHelper.ArchiveAndWrite(reversedText, reverserData.ExtensionType, reverserData.ArchiveType, reverserData.OutputFile, out compresionResult);
+                            ArchiverHelper.ArchiveAndWrite(reversedText, reverserData.ReverseType, reverserData.ExtensionType, reverserData.ArchiveType, reverserData.OutputFile, out compresionResult);
                         }
                         
                         totalLexemeCount += lexemeCount;
@@ -103,7 +105,7 @@ namespace FileProcessor
                 //Merge all portions of the text
                 if (threadCount > 1)
                 {
-                    ArchiverHelper.ArchiveAndWriteParalel(reverserData.ArchiveType, reverserData.OutputFile, reverserData.ExtensionType, out compresionResult);
+                    ArchiverHelper.ArchiveAndWriteParalel(reverserData.ReverseType, reverserData.ArchiveType, reverserData.OutputFile, reverserData.ExtensionType, out compresionResult);
                 }
                 // Step 9: Calculate the total lexeme count and total time taken
                 // Stop the stopwatch      
@@ -127,9 +129,9 @@ namespace FileProcessor
         public static void ProcessDirectory(ReverseData reverserData, Action<double> updateProgress)
         {
             string[] fileNames = Directory.GetFiles(reverserData.InputDirectory);
-            string oneDiectoryBackPath = Path.GetDirectoryName(reverserData.InputDirectory);
+            string oneDirectoryBackPath = Path.GetDirectoryName(reverserData.InputDirectory);
             string inputDirectoryName = Path.GetFileName(reverserData.InputDirectory);
-            string outputDirectoryPath = Path.Combine(oneDiectoryBackPath, $"output_directory_{inputDirectoryName}_{DateTime.Now.Second}");
+            string outputDirectoryPath = Path.Combine(oneDirectoryBackPath, $"I{reverserData.ReverseType[0]}_{inputDirectoryName}_{DateTime.Now.Second}");
             Directory.CreateDirectory(outputDirectoryPath);
 
             double progressStep = 1.0d / fileNames.Length;
@@ -138,13 +140,21 @@ namespace FileProcessor
             {
                 //Task.Delay(100);
                 string fileName = Path.GetFileName(fileNameWithPath);
-                string tempOutputFileName = $"outfile_based_on_{fileName}.txt";
+                string tempOutputFileName = $"I{reverserData.ReverseType[0]}_{fileName}";
                 reverserData.OutputFile = Path.Combine(outputDirectoryPath, tempOutputFileName);
                 reverserData.InputFile = Path.Combine(reverserData.InputDirectory, fileName);
                 ProcessFile(reverserData);
                 
                 updateProgress(progressStep);
             }
+        }
+
+        public static void ProcessFileCall(ReverseData reverserData)
+        {
+            string inputFileName = Path.GetFileNameWithoutExtension(reverserData.InputFile);
+            reverserData.OutputFile = $"{Path.GetDirectoryName(reverserData.InputFile)}/I{reverserData.ReverseType[0]}_{inputFileName}{reverserData.ExtensionType}";
+
+            ProcessFile(reverserData);
         }
 
         public static string ReadFilePortion(string fileName, long startPosition, long endPosition)
@@ -166,28 +176,31 @@ namespace FileProcessor
             {
                 case "char":
                     char[] charArray = text.ToCharArray();
-                    //List<char> newCharArray = new List<char>();
+                    List<char> newCharArray = new List<char>();
 
-                    //for(int i = charArray.Length - 1; i >= 0; i--)
-                    //{
-                    //    if (charArray[i] != '\u0000')
-                    //    {
-                    //        if(charArray[i] == '\n' && i - 1 >= 0 && charArray[i - 1] == '\r')
-                    //        {
-                    //            newCharArray.Add('\r');
-                    //            newCharArray.Add('\n');
-                    //            i--;
-                    //        }
-                    //        else
-                    //        {
-                    //            newCharArray.Add(charArray[i]);
-                    //        }
-                    //    }
-                    //}
+                    for (int i = charArray.Length - 1; i >= 0; i--)
+                    {
+                        if (charArray[i] != '\u0000')
+                        {
+                            if (charArray[i] == '\n' && i - 1 >= 0 && charArray[i - 1] == '\r')
+                            {
+                                newCharArray.Add('\r');
+                                newCharArray.Add('\n');
+                                i--;
+                            }
+                            else
+                            {
+                                newCharArray.Add(charArray[i]);
+                            }
+                        }
+                    }
 
                     lexemeCount = charArray.Length;
-                    Array.Reverse(charArray);
-                    return new string(charArray);
+
+                    return new string(newCharArray.ToArray());
+                    
+                    //Array.Reverse(charArray);
+                    //return new string(charArray);
 
                 case "word":
                     Regex regexForWords = new Regex(@"[^\p{L}]*\p{Z}[^\p{L}]*");

@@ -21,7 +21,7 @@ namespace Archiver
             SavedTextPortions = new BlockingCollection<PortionParams>();
         }
 
-        public void ArchiveAndWrite(string reversedText, string extension, string archiveType, string outputFile, out CompresionResult? compresionResult)
+        public void ArchiveAndWrite(string reversedText, string reverseType, string extension, string archiveType, string outputFile, out CompresionResult? compresionResult)
         {
             if (!string.IsNullOrEmpty(archiveType))
             {
@@ -29,11 +29,11 @@ namespace Archiver
                 switch (archiveType.ToLower())
                 {
                     case "zip":
-                        compresionResult = CreateZipArchive(archiveName, reversedText, extension).GetAwaiter().GetResult();
+                        compresionResult = CreateZipArchive(reverseType, archiveName, reversedText, extension).GetAwaiter().GetResult();
                         break;
 
                     case "7z":
-                        compresionResult = Create7zArchive(archiveName, reversedText, extension);
+                        compresionResult = Create7zArchive(reverseType, archiveName, reversedText, extension);
                         break;
 
                     case "none":
@@ -53,7 +53,7 @@ namespace Archiver
                 WriteToFile(outputFile, reversedText);
             }
         }
-        public void ArchiveAndWriteParalel(string archiveType, string outputFile, string extension, out CompresionResult? compresionResult)
+        public void ArchiveAndWriteParalel(string reverseType, string archiveType, string outputFile, string extension, out CompresionResult? compresionResult)
         {
             if (!string.IsNullOrEmpty(archiveType))
             {
@@ -62,11 +62,11 @@ namespace Archiver
                 switch (archiveType.ToLower())
                 {
                     case "zip":
-                        compresionResult = CreateZipArchiveParalel(archiveName, extension);
+                        compresionResult = CreateZipArchiveParalel(reverseType, archiveName, extension);
                         break;
 
                     case "7z":
-                        compresionResult = Create7zArchiveParalel(archiveName, extension);
+                        compresionResult = Create7zArchiveParalel(reverseType, archiveName, extension);
                         break;
 
                     case "none":
@@ -87,7 +87,7 @@ namespace Archiver
             }
         }
 
-        private async Task<CompresionResult> CreateZipArchive(string archiveFilePath, string text, string extension)
+        private async Task<CompresionResult> CreateZipArchive(string reverseType, string archiveFilePath, string text, string extension)
         {
             var compresionResult = new CompresionResult();
 
@@ -95,7 +95,7 @@ namespace Archiver
             {
                 using (ZipArchive zipArchive = new ZipArchive(fs, ZipArchiveMode.Create))
                 {
-                    ZipArchiveEntry entry = zipArchive.CreateEntry("reversed." + extension);
+                    ZipArchiveEntry entry = zipArchive.CreateEntry("I"+ reverseType[0] + "_archive." + extension);
                     using (StreamWriter writer = new StreamWriter(entry.Open()))
                     {
                         await writer.WriteAsync(text);
@@ -108,7 +108,7 @@ namespace Archiver
             return compresionResult;
         }
 
-        public CompresionResult CreateZipArchiveParalel(string archiveFilePath, string extension)
+        public CompresionResult CreateZipArchiveParalel(string reverseType, string archiveFilePath, string extension)
         {
             // Create a folder to store the text file
             string folderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -116,7 +116,7 @@ namespace Archiver
             string folderFullPath = Path.Combine(folderPath, folderName);
             Directory.CreateDirectory(folderFullPath);
 
-            string fileName = $"text_file." + extension;
+            string fileName = $"I" + reverseType[0] + "text" + "." + extension;
             string filePath = Path.Combine(folderFullPath, fileName);
 
             WriteToFileParalel(filePath);
@@ -140,7 +140,7 @@ namespace Archiver
             return compresionResult;
         }
 
-        public CompresionResult Create7zArchive(string archiveFilePath, string text, string extension)
+        public CompresionResult Create7zArchive(string reverseType, string archiveFilePath, string text, string extension)
         {
             // Create a folder to store the text file
             string folderPath = Path.GetDirectoryName(archiveFilePath);
@@ -149,7 +149,7 @@ namespace Archiver
             Directory.CreateDirectory(folderFullPath);
 
             // Write the text to a file within the folder
-            string textFilePath = Path.Combine(folderFullPath, "text.txt");
+            string textFilePath = Path.Combine(folderFullPath, "I" + reverseType[0] + "." + extension);
             File.WriteAllText(textFilePath, text);
 
             // Create a 7z archive with the folder
@@ -173,7 +173,7 @@ namespace Archiver
             return compresionResult;
         }
 
-        public CompresionResult Create7zArchiveParalel(string archiveFilePath, string extension)
+        public CompresionResult Create7zArchiveParalel(string reverseType, string archiveFilePath, string extension)
         {
             // Create a folder to store the text file
             string folderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -181,7 +181,7 @@ namespace Archiver
             string folderFullPath = Path.Combine(folderPath, folderName);
             Directory.CreateDirectory(folderFullPath);
 
-            string fileName = $"text_file." + extension;
+            string fileName = "I" + reverseType[0] + "text." + extension;
             string filePath = Path.Combine(folderFullPath, fileName);
 
             WriteToFileParalel(filePath);

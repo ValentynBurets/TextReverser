@@ -1,14 +1,7 @@
 ﻿using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Mvvm.Input;
 using FileProcessor;
-using FileProcessor.Model;
-using SharpCompress.Common;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Windows.Input;
-using TextReverser.Services;
 
 namespace TextReverser.ViewModel
 {
@@ -117,7 +110,7 @@ namespace TextReverser.ViewModel
                 if(ReverserData.OutputFile == "" || ReverserData.OutputFile == null)
                 {
                     string inputFileName = Path.GetFileName(ReverserData.InputFile);
-                    ReverserData.OutputFile = Path.GetDirectoryName(ReverserData.InputFile) + "/out_put_file" + inputFileName + ".txt";
+                    ReverserData.OutputFile = $"{Path.GetDirectoryName(ReverserData.InputFile)}/I{ReverserData.ReverseType[0]}_{inputFileName}.{ReverserData.ExtensionType}";
                 }
                 // Start a new thread or use a Task to call the ProcessFile method
                 FileProcessorWorker.ProcessFile(ReverserData);
@@ -146,7 +139,8 @@ namespace TextReverser.ViewModel
 
                 if (ReverserData.OutputFile == "" || ReverserData.OutputFile == null)
                 {
-                    ReverserData.OutputFile = Path.GetDirectoryName(ReverserData.InputFile) + "/out_put_file.txt";
+                    string inputFileName = Path.GetFileName(ReverserData.InputFile);
+                    ReverserData.OutputFile = $"{Path.GetDirectoryName(ReverserData.InputFile)}/I{ReverserData.ReverseType[0]}_{inputFileName}.{ReverserData.ExtensionType}";
                 }
                 // Start a new thread or use a Task to call the ProcessFile method
                 FileProcessorWorker.ProcessDirectory(ReverserData, updateProgress);
