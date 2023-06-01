@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Mvvm.Input;
-using FileProcessor;
 using System.Diagnostics;
+using TextReverser.FileProcessor;
 
 namespace TextReverser.ViewModel
 {

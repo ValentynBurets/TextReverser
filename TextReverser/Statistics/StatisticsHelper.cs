@@ -1,6 +1,6 @@
 ﻿using Archiver.Model;
 
-namespace Statistics
+namespace TextReverser.Statistics
 {
     public static class StatisticsHelper
     {

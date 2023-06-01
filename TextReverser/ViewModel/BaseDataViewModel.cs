@@ -1,5 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using FileProcessor.Model;
+using TextReverser.FileProcessor.Model;
 
 namespace TextReverser.ViewModel
 {

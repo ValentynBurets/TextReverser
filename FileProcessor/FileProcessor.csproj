@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Archiver\Archiver.csproj" />
-    <ProjectReference Include="..\Statistics\Statistics.csproj" />
   </ItemGroup>
 
 </Project>
