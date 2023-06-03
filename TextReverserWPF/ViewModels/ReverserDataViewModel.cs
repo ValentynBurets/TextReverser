@@ -147,11 +147,11 @@ namespace TextReverserWPF.ViewModel
 
         
         [RelayCommand]
-        void StartDirectoryProcessing()
+        async Task StartDirectoryProcessing()
         {
             try
             {
-                Action<double> updateProgress = (double newProgress) => Progress += newProgress;
+                Action<double> updateProgress = (double progressStep) => Progress += progressStep;
                 if (string.IsNullOrEmpty(ReverserData.ReverseType) || string.IsNullOrEmpty(ReverserData.InputDirectory))
                 {
                     string errorMessage = "Missing information! Please provide all required fields.";
@@ -168,8 +168,8 @@ namespace TextReverserWPF.ViewModel
                 }
 
                 // Start a new thread or use a Task to call the ProcessFile method
-                FileProcessorWorker.ProcessDirectory(ReverserData, updateProgress);
-                ReverserData.OutputFile = "";
+                await FileProcessorWorker.ProcessDirectory(ReverserData, updateProgress);
+  
                 if (Progress >= 1)
                 {
                     MessageBox.Show("", "Reversed", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -177,6 +177,7 @@ namespace TextReverserWPF.ViewModel
                     Progress = 0;
                     UiEnabled = true;
                 }
+                ReverserData.OutputFile = "";
             }
             catch (Exception ex)
             {
