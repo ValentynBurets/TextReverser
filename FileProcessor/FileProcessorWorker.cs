@@ -122,7 +122,7 @@ namespace FileProcessor
             }
         }
 
-        public static async Task ProcessDirectory(ReverseData reverserData, Action<double> updateProgress)
+        public static async Task ProcessDirectory(ReverseData reverserData, Action<double, TimeSpan> updateProgress)
         {
             string[] fileNames = Directory.GetFiles(reverserData.InputDirectory);
             string oneDirectoryBackPath = Path.GetDirectoryName(reverserData.InputDirectory);
@@ -131,9 +131,13 @@ namespace FileProcessor
             Directory.CreateDirectory(outputDirectoryPath);
             
             double progressStep = 1.0 / fileNames.Length;
+            //long numberOfInvertedFile = 0;
+            long totalNumberOfFiles = fileNames.Length;
 
             foreach (string fileNameWithPath in fileNames)
             {
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 string currentFileNameWithPath = fileNameWithPath;
                 string fileName = Path.GetFileName(currentFileNameWithPath);
                 string tempOutputFileName = $"i{reverserData.ReverseType[0]}_{fileName}";
@@ -141,7 +145,11 @@ namespace FileProcessor
                 reverserData.InputFile = Path.Combine(reverserData.InputDirectory, fileName);
                 await Task.Run(() => { ProcessFile(reverserData); });
 
-                updateProgress(progressStep);
+                totalNumberOfFiles--;
+                stopwatch.Stop();
+                TimeSpan timeLeft = TimeSpan.FromSeconds(stopwatch.ElapsedMilliseconds * totalNumberOfFiles);
+                
+                updateProgress(progressStep, timeLeft);
             }
         }
 

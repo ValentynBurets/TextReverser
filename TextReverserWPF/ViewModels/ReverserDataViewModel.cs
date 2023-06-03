@@ -46,7 +46,7 @@ namespace TextReverserWPF.ViewModel
                 if (openFileDialog.ShowDialog() != null)
                 {
                     ReverserData.InputFile = openFileDialog.FileName;
-                    InputFileNameText = $"Selected Input File: {openFileDialog.FileName}";
+                    InputFileNameText = openFileDialog.FileName.ToString();
                 }
             }
             catch (Exception ex)
@@ -66,14 +66,14 @@ namespace TextReverserWPF.ViewModel
                     ValidateNames = false,
                     CheckFileExists = false,
                     CheckPathExists = true,
-                    FileName = "Select a folder"
+                    FileName = ReverserData.InputDirectory
                 };
                 string folder = null;
                 if (dialog.ShowDialog() == true && dialog.FileName != null)
                 {
                     folder = System.IO.Path.GetDirectoryName(dialog.FileName);
                     ReverserData.InputDirectory = folder;
-                    InputDirectoryNameText = $"Selected Input Folder: {folder}";
+                    InputDirectoryNameText = folder.ToString();
                 }
             }
             catch (Exception ex)
@@ -96,7 +96,7 @@ namespace TextReverserWPF.ViewModel
                 if (openFileDialog.ShowDialog() != null)
                 {
                     ReverserData.OutputFile = openFileDialog.FileName;
-                    OutputFileNameText = $"Selected Output File: {openFileDialog.FileName}";
+                    OutputFileNameText = openFileDialog.FileName;
                 }
             }
             catch (Exception ex)
@@ -129,7 +129,7 @@ namespace TextReverserWPF.ViewModel
                 // Start a new thread or use a Task to call the ProcessFile method
                 FileProcessorWorker.ProcessFile(ReverserData);
                 ReverserData.OutputFile = "";
-                MessageBox.Show("", "Reversed", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Документ інвертовано", "Інформація", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -144,7 +144,12 @@ namespace TextReverserWPF.ViewModel
         {
             try
             {
-                Action<double> updateProgress = (double progressStep) => Progress += progressStep;
+                Action<double, TimeSpan> updateProgress = (double progressStep, TimeSpan timeLeft) =>
+                {
+                    Progress += progressStep;
+                    TimeLeft = timeLeft;
+                };
+
                 if (string.IsNullOrEmpty(ReverserData.ReverseType) || string.IsNullOrEmpty(ReverserData.InputDirectory))
                 {
                     string errorMessage = "Missing information! Please provide all required fields.";
@@ -165,7 +170,7 @@ namespace TextReverserWPF.ViewModel
   
                 if (Progress >= 1)
                 {
-                    MessageBox.Show("", "Reversed", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Папку інвертовано", "Іноформація", MessageBoxButton.OK, MessageBoxImage.Information);
                     
                     Progress = 0;
                     UiEnabled = true;

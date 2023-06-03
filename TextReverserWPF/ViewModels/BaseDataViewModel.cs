@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using FileProcessor.Model;
+using System;
 
 namespace TextReverserWPF.ViewModel
 {
@@ -35,20 +36,8 @@ namespace TextReverserWPF.ViewModel
         [ObservableProperty]
         bool uiEnabled = true;
 
-
-        //private double progress;
-        //public double Progress
-        //{
-        //    get { return progress; }
-        //    set
-        //    {
-        //        if (progress != value)
-        //        {
-        //            progress = value;
-        //            OnPropertyChanged(nameof(Progress));
-        //        }
-        //    }
-        //}
+        [ObservableProperty]
+        TimeSpan timeLeft;
 
         public bool IsCheckBoxVisible => ReverserData?.ReverseType == "Word";
     }
