@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Statistics", "Statistics\St
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TextReverser", "TextReverser\TextReverser.csproj", "{BB6CB683-AF3B-4156-8DA6-BB83257A041F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileProcessor.Tests", "FileProcessor.Tests\FileProcessor.Tests.csproj", "{E34B20F3-BB6F-4B12-B10F-3AD6C04BC8DE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileProcessor.Tests", "FileProcessor.Tests\FileProcessor.Tests.csproj", "{E34B20F3-BB6F-4B12-B10F-3AD6C04BC8DE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TextReverserWPF", "TextReverserWPF\TextReverserWPF.csproj", "{87115054-3D0B-4394-A7D5-AA70B3F23634}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{E34B20F3-BB6F-4B12-B10F-3AD6C04BC8DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E34B20F3-BB6F-4B12-B10F-3AD6C04BC8DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E34B20F3-BB6F-4B12-B10F-3AD6C04BC8DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87115054-3D0B-4394-A7D5-AA70B3F23634}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87115054-3D0B-4394-A7D5-AA70B3F23634}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87115054-3D0B-4394-A7D5-AA70B3F23634}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87115054-3D0B-4394-A7D5-AA70B3F23634}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
