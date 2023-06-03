@@ -8,6 +8,8 @@ namespace TextReverserWPF.ViewModel
         public BaseDataViewModel()
         {
             reverserData = new ReverseData();
+            reverserData.ReverseType = "Char";
+            reverserData.ArchiveType = "none";
         }
 
         [ObservableProperty]
@@ -27,26 +29,26 @@ namespace TextReverserWPF.ViewModel
         [ObservableProperty]
         string inputDirectoryNameText;
 
-        //[ObservableProperty]
-        //double progress;
+        [ObservableProperty]
+        double progress;
 
         [ObservableProperty]
         bool uiEnabled = true;
 
 
-        private double progress;
-        public double Progress
-        {
-            get { return progress; }
-            set
-            {
-                if (progress != value)
-                {
-                    progress = value;
-                    OnPropertyChanged(nameof(Progress));
-                }
-            }
-        }
+        //private double progress;
+        //public double Progress
+        //{
+        //    get { return progress; }
+        //    set
+        //    {
+        //        if (progress != value)
+        //        {
+        //            progress = value;
+        //            OnPropertyChanged(nameof(Progress));
+        //        }
+        //    }
+        //}
 
         public bool IsCheckBoxVisible => ReverserData?.ReverseType == "Word";
     }

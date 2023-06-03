@@ -61,8 +61,6 @@ namespace TextReverserWPF.ViewModel
         {
             try
             {
-                CancellationToken cancellationToken = new CancellationToken();
-                string currentDirectory = Path.GetDirectoryName(Environment.CurrentDirectory);
                 var dialog = new OpenFileDialog
                 {
                     ValidateNames = false,
@@ -74,11 +72,6 @@ namespace TextReverserWPF.ViewModel
                 if (dialog.ShowDialog() == true && dialog.FileName != null)
                 {
                     folder = System.IO.Path.GetDirectoryName(dialog.FileName);
-                    // Do something with the selected directory path
-                }
-
-                if (folder != null)
-                {
                     ReverserData.InputDirectory = folder;
                     InputDirectoryNameText = $"Selected Input Folder: {folder}";
                 }
