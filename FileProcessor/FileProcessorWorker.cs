@@ -122,24 +122,24 @@ namespace FileProcessor
             }
         }
 
-        public static void ProcessDirectory(ReverseData reverserData, Action<double> updateProgress)
+        public static async Task ProcessDirectory(ReverseData reverserData, Action<double> updateProgress)
         {
             string[] fileNames = Directory.GetFiles(reverserData.InputDirectory);
             string oneDirectoryBackPath = Path.GetDirectoryName(reverserData.InputDirectory);
             string inputDirectoryName = Path.GetFileName(reverserData.InputDirectory);
             string outputDirectoryPath = Path.Combine(oneDirectoryBackPath, $"i{reverserData.ReverseType[0]}_{inputDirectoryName}_{DateTime.Now.Second}");
             Directory.CreateDirectory(outputDirectoryPath);
-
-            double progressStep = 1.0d / fileNames.Length;
             
+            double progressStep = 1.0 / fileNames.Length;
+
             foreach (string fileNameWithPath in fileNames)
             {
-                //Task.Delay(100);
-                string fileName = Path.GetFileName(fileNameWithPath);
+                string currentFileNameWithPath = fileNameWithPath;
+                string fileName = Path.GetFileName(currentFileNameWithPath);
                 string tempOutputFileName = $"i{reverserData.ReverseType[0]}_{fileName}";
                 reverserData.OutputFile = Path.Combine(outputDirectoryPath, tempOutputFileName);
                 reverserData.InputFile = Path.Combine(reverserData.InputDirectory, fileName);
-                ProcessFile(reverserData);
+                await Task.Run(() => { ProcessFile(reverserData); });
 
                 updateProgress(progressStep);
             }
@@ -207,15 +207,19 @@ namespace FileProcessor
                     }
                     Array.Reverse(words);
                     lexemeCount = words.Count();
-                    return string.Join(" ", words);
+                    string wordRes = string.Join(" ", words);
+
+                    return wordRes.Replace("\u0000", "");
 
                 case "sentence":
                     // Use regular expression to match sentences with their end signs
-                    Regex regexForSentence = new Regex(@"(?<=[\.!\?])\s+");
+                    Regex regexForSentence = new Regex(@"(?<=[\.!\?…⁉️⁈‼️⁇])\s+");
                     var matches = regexForSentence.Split(text);
                     Array.Reverse(matches);
                     lexemeCount = matches.Count();
-                    return string.Join(" ", matches);
+                    string sentencesRes = string.Join(" ", matches);
+
+                    return sentencesRes.Replace("\u0000", "");
 
                 default:
                     throw new ArgumentException("Invalid reverse type.");
