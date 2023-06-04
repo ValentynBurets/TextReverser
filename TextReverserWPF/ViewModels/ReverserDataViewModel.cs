@@ -109,7 +109,7 @@ namespace TextReverserWPF.ViewModel
         }
 
         [RelayCommand]
-        void StartFileProcessing()
+        async Task StartFileProcessing()
         {
             Mutex mutexTimeSync = new Mutex();
             try
@@ -158,7 +158,8 @@ namespace TextReverserWPF.ViewModel
                 };
 
                 // Start a new thread or use a Task to call the ProcessFile method
-                FileProcessorWorker.ProcessFile(ReverserData, updateFileSizeLeft);
+                await Task.Run(() => { FileProcessorWorker.ProcessFile(ReverserData, updateFileSizeLeft); });
+                
                 Progress = 1;
                 ReverserData.OutputFile = "";
                 MessageBox.Show("Документ інвертовано", "Інформація", MessageBoxButton.OK, MessageBoxImage.Information);

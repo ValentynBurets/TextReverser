@@ -44,7 +44,7 @@ namespace FileProcessor
                 long fileSize = fileInfo.Length;
                 reverserData.ExtensionType = fileInfo.Extension;
 
-                Encoding EncodingType = EncodingHelper.DetectEncoding(fileInfo);
+                Encoding EncodingType = EncodingHelper.DetectEncoding(reverserData.InputFile);
 
                 // Step 3: Calculate the number of threads to be used for parallel reading
                 int threadCount = Math.Min(maxThreads, (int)Math.Ceiling((double)fileSize / bufferSize));
