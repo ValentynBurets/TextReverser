@@ -25,7 +25,7 @@ namespace TextReverserWPF.Services
             }
 
             // Start a new thread or use a Task to call the ProcessFile method
-            Task.Run(() => FileProcessorWorker.ProcessFile(reverserData));
+            //Task.Run(() => FileProcessorWorker.ProcessFile(reverserData));
         }
     }
 }

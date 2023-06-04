@@ -11,6 +11,7 @@ namespace TextReverserWPF.ViewModel
             reverserData = new ReverseData();
             reverserData.ReverseType = "Char";
             reverserData.ArchiveType = "none";
+            timeLeft = String.Empty;
         }
 
         [ObservableProperty]

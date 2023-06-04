@@ -6,6 +6,8 @@ using FileProcessor.Model;
 using Archiver.Model;
 using System.Text;
 using SharpCompress.Common;
+using System.Collections.Concurrent;
+using System;
 
 namespace FileProcessor
 {
@@ -13,7 +15,10 @@ namespace FileProcessor
     {
         private static readonly int bufferSize = 8192; // Buffer size for reading file portions
         private static readonly int maxThreads = Environment.ProcessorCount; // Number of threads to use for parallel reading
-        public static void ProcessFile(ReverseData reverserData)
+        public static BlockingCollection<double> reversalTimeOfTenKiloBites = new BlockingCollection<double>();
+        private static Mutex mutexTimeSync = new Mutex();
+
+        public static void ProcessFile(ReverseData reverserData, Action<long> updateFileSizeLeft)
         {
             string inputFileName = Path.GetFileName(reverserData.InputFile);
 
@@ -58,6 +63,8 @@ namespace FileProcessor
                     // Step 5a: Initialize a thread to read the portion of the file in parallel
                     Thread thread = new Thread(() =>
                     {
+                        Stopwatch stopWatchPortionTime = Stopwatch.StartNew();
+
                         int lexemeCount = 0;
                         // Step 5b: Read the portion of the file using buffering techniques
                         string portionText = ReadFilePortion(reverserData.InputFile, startPosition, endPosition);
@@ -76,6 +83,13 @@ namespace FileProcessor
                         }
                         
                         totalLexemeCount += lexemeCount;
+                        
+                        stopWatchPortionTime.Stop();
+                        updateFileSizeLeft(portionSize);
+
+                        double portionSizeInKilobites = (double)portionSize / 1024;
+                        double timeSpentToReverse = stopWatchPortionTime.ElapsedMilliseconds / portionSizeInKilobites;
+                        reversalTimeOfTenKiloBites.Add(timeSpentToReverse);
                     });
 
                     threads.Add(thread);
@@ -123,7 +137,7 @@ namespace FileProcessor
             }
         }
 
-        public static async Task ProcessDirectory(ReverseData reverserData, Action<double, TimeSpan> updateProgress)
+        public static async Task ProcessDirectory(ReverseData reverserData, Action<double> updateProgress, Action<TimeSpan> updateTimeLeftLable)
         {
             string[] fileNames = Directory.GetFiles(reverserData.InputDirectory);
             string oneDirectoryBackPath = Path.GetDirectoryName(reverserData.InputDirectory);
@@ -134,30 +148,41 @@ namespace FileProcessor
             double progressStep = 1.0 / fileNames.Length;
             
             DirectoryInfo directoryInfo = new DirectoryInfo(reverserData.InputDirectory);
-            long totalDirectorySize = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories)
+            long totalSizeLeft = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories)
                 .Sum(file => file.Length);
+
+            Action<long> updateFileSizeLeft = (long portionSize) =>
+            {
+                totalSizeLeft -= portionSize;
+
+                mutexTimeSync.WaitOne();
+
+                long reversalTimeOfTenKiloBitesCount = reversalTimeOfTenKiloBites.Count;
+                if (reversalTimeOfTenKiloBitesCount % 10 == 0 && reversalTimeOfTenKiloBitesCount < 100 || reversalTimeOfTenKiloBitesCount % 1000 == 0 && reversalTimeOfTenKiloBitesCount > 0)
+                {
+                    double averageValue = reversalTimeOfTenKiloBites.Where(item => !double.IsInfinity(item)).Average();
+
+                    TimeSpan averageTimeSpan = TimeSpan.FromMilliseconds(averageValue * (totalSizeLeft / 1024));
+
+                    updateTimeLeftLable(averageTimeSpan);
+                }
+                mutexTimeSync.ReleaseMutex();
+            };
 
 
             foreach (string fileNameWithPath in fileNames)
             {
-                Stopwatch stopwatch = Stopwatch.StartNew();
-
                 string currentFileNameWithPath = fileNameWithPath;
                 string fileName = Path.GetFileName(currentFileNameWithPath);
                 string tempOutputFileName = $"i{reverserData.ReverseType[0]}_{fileName}";
                 reverserData.OutputFile = Path.Combine(outputDirectoryPath, tempOutputFileName);
                 reverserData.InputFile = Path.Combine(reverserData.InputDirectory, fileName);
-                await Task.Run(() => { ProcessFile(reverserData); });
-
-
-                long fileSizeBytes = new FileInfo(reverserData.InputFile).Length;
-                totalDirectorySize -= fileSizeBytes;
-
-                stopwatch.Stop();
-                TimeSpan timeLeft = TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds * (totalDirectorySize / fileSizeBytes));
+                await Task.Run(() => { ProcessFile(reverserData, updateFileSizeLeft); });
                 
-                updateProgress(progressStep, timeLeft);
+                updateProgress(progressStep);
             }
+
+            reversalTimeOfTenKiloBites = new BlockingCollection<double>();
         }
 
         public static string ReadFilePortion(string fileName, long startPosition, long endPosition)

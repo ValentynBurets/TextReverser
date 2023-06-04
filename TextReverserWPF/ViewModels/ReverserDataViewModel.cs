@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using FileProcessor;
+using FileProcessor.Model;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -110,6 +111,7 @@ namespace TextReverserWPF.ViewModel
         [RelayCommand]
         void StartFileProcessing()
         {
+            Mutex mutexTimeSync = new Mutex();
             try
             {
                 if (string.IsNullOrEmpty(ReverserData.ReverseType) || string.IsNullOrEmpty(ReverserData.InputFile))
@@ -127,10 +129,41 @@ namespace TextReverserWPF.ViewModel
                     ReverserData.OutputFile = $"{Path.GetDirectoryName(ReverserData.InputFile)}/i{ReverserData.ReverseType[0]}_{inputFileName}.{ReverserData.ExtensionType}";
                 }
 
+                long totalSizeLeft = new FileInfo(ReverserData.InputFile).Length;
+
+                Action<TimeSpan> updateTimeLeftLable = (TimeSpan timeLeft) =>
+                {
+                    TimeLeft = "Залишилося часу"
+                                + (timeLeft.Days != 0 ? $" : {timeLeft.Days} днів" : "")
+                                + (timeLeft.Minutes != 0 ? $" : {timeLeft.Minutes} хвилин" : "")
+                                + (timeLeft.Seconds != 0 ? $" : {timeLeft.Seconds} секунд" : "0 секунд");
+
+                };
+
+                Action<long> updateFileSizeLeft = (long portionSize) =>
+                {
+                    totalSizeLeft -= portionSize;
+
+                    mutexTimeSync.WaitOne();
+
+                    if (FileProcessorWorker.reversalTimeOfTenKiloBites.Count > 0)
+                    {
+                        double averageValue = FileProcessorWorker.reversalTimeOfTenKiloBites.Where(item => !double.IsInfinity(item)).Average();
+
+                        TimeSpan averageTimeSpan = TimeSpan.FromMilliseconds(averageValue * (totalSizeLeft / 1024));
+
+                        updateTimeLeftLable(averageTimeSpan);
+                    }
+                    mutexTimeSync.ReleaseMutex();
+                };
+
                 // Start a new thread or use a Task to call the ProcessFile method
-                FileProcessorWorker.ProcessFile(ReverserData);
+                FileProcessorWorker.ProcessFile(ReverserData, updateFileSizeLeft);
+                Progress = 1;
                 ReverserData.OutputFile = "";
                 MessageBox.Show("Документ інвертовано", "Інформація", MessageBoxButton.OK, MessageBoxImage.Information);
+                Progress = 0;
+                TimeLeft = "";
             }
             catch (Exception ex)
             {
@@ -145,28 +178,16 @@ namespace TextReverserWPF.ViewModel
         {
             try
             {
-                List<TimeSpan> tempTimes = new List<TimeSpan>();
                 
-                Action<double, TimeSpan> updateProgress = (double progressStep, TimeSpan timeLeft) =>
+                Action<double> updateProgress = (double progressStep) => Progress += progressStep;
+
+                Action<TimeSpan> updateTimeLeftLable = (TimeSpan timeLeft) =>
                 {
-                    Progress += progressStep;
-                    
-                    tempTimes.Add(timeLeft);
+                    TimeLeft = "Залишилося часу"
+                                + (timeLeft.Days != 0 ? $" : {timeLeft.Days} днів" : "")
+                                + (timeLeft.Minutes != 0 ? $" : {timeLeft.Minutes} хвилин" : "")
+                                + (timeLeft.Seconds != 0 ? $" : {timeLeft.Seconds} секунд" : "0 секунд");
 
-                    if (tempTimes.Count % 100 == 0)
-                    {
-                        double averageValue = tempTimes
-                                                  .Select(timeSpan => timeSpan.TotalSeconds) // Convert TimeSpan to milliseconds
-                                                  .Average(); // Calculate the average
-
-                        TimeSpan averageTimeSpan = TimeSpan.FromSeconds(averageValue);
-
-                        TimeLeft = "Залишилося часу" 
-                                    + (averageTimeSpan.Days != 0 ? $" : {averageTimeSpan.Days} днів" : "") 
-                                    + (averageTimeSpan.Minutes != 0 ? $" : {averageTimeSpan.Minutes} хвилин" : "") 
-                                    + (averageTimeSpan.Seconds != 0 ? $" : {averageTimeSpan.Seconds} секунд" : "");
-                        tempTimes.Clear();
-                    }
                 };
 
                 if (string.IsNullOrEmpty(ReverserData.ReverseType) || string.IsNullOrEmpty(ReverserData.InputDirectory))
@@ -185,7 +206,7 @@ namespace TextReverserWPF.ViewModel
                 }
 
                 // Start a new thread or use a Task to call the ProcessFile method
-                await FileProcessorWorker.ProcessDirectory(ReverserData, updateProgress);
+                await FileProcessorWorker.ProcessDirectory(ReverserData, updateProgress, updateTimeLeftLable);
   
                 if (Progress >= 1)
                 {
@@ -195,6 +216,7 @@ namespace TextReverserWPF.ViewModel
                     UiEnabled = true;
                 }
                 ReverserData.OutputFile = "";
+                TimeLeft = "";
             }
             catch (Exception ex)
             {

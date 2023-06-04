@@ -1,14 +1,6 @@
 ﻿using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Mvvm.Input;
-using FileProcessor;
-using FileProcessor.Model;
-using SharpCompress.Common;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Windows.Input;
-using TextReverser.Services;
 
 namespace TextReverser.ViewModel
 {
@@ -120,7 +112,7 @@ namespace TextReverser.ViewModel
                     ReverserData.OutputFile = Path.GetDirectoryName(ReverserData.InputFile) + "/out_put_file" + inputFileName + ".txt";
                 }
                 // Start a new thread or use a Task to call the ProcessFile method
-                FileProcessorWorker.ProcessFile(ReverserData);
+                //FileProcessorWorker.ProcessFile(ReverserData);
                 Shell.Current.DisplayAlert("Reversed","", "OK");
             }
             catch (Exception ex)
@@ -154,7 +146,7 @@ namespace TextReverser.ViewModel
                     ReverserData.OutputFile = Path.GetDirectoryName(ReverserData.InputFile) + "/out_put_file.txt";
                 }
                 // Start a new thread or use a Task to call the ProcessFile method
-                FileProcessorWorker.ProcessDirectory(ReverserData, updateProgress);
+                //FileProcessorWorker.ProcessDirectory(ReverserData, updateProgress);
                 
                 if (Progress >= 1)
                 {
