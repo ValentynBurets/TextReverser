@@ -136,7 +136,12 @@ namespace TextReverser.ViewModel
         {
             try
             {
-                Action<double> updateProgress = (double newProgress) => Progress += newProgress;
+                Action<double, TimeSpan> updateProgress = (double newProgress, TimeSpan timeLeft) =>
+                {
+                    Progress += newProgress;
+                    TimeLeft = timeLeft;
+                };
+
                 if (string.IsNullOrEmpty(ReverserData.ReverseType) || string.IsNullOrEmpty(ReverserData.InputDirectory))
                 {
                     string errorMessage = "Missing information! Please provide all required fields.";

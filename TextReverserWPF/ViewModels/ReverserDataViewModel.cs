@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -144,10 +145,28 @@ namespace TextReverserWPF.ViewModel
         {
             try
             {
+                List<TimeSpan> tempTimes = new List<TimeSpan>();
+                
                 Action<double, TimeSpan> updateProgress = (double progressStep, TimeSpan timeLeft) =>
                 {
                     Progress += progressStep;
-                    TimeLeft = timeLeft;
+                    
+                    tempTimes.Add(timeLeft);
+
+                    if (tempTimes.Count % 100 == 0)
+                    {
+                        double averageValue = tempTimes
+                                                  .Select(timeSpan => timeSpan.TotalSeconds) // Convert TimeSpan to milliseconds
+                                                  .Average(); // Calculate the average
+
+                        TimeSpan averageTimeSpan = TimeSpan.FromSeconds(averageValue);
+
+                        TimeLeft = "Залишилося часу" 
+                                    + (averageTimeSpan.Days != 0 ? $" : {averageTimeSpan.Days} днів" : "") 
+                                    + (averageTimeSpan.Minutes != 0 ? $" : {averageTimeSpan.Minutes} хвилин" : "") 
+                                    + (averageTimeSpan.Seconds != 0 ? $" : {averageTimeSpan.Seconds} секунд" : "");
+                        tempTimes.Clear();
+                    }
                 };
 
                 if (string.IsNullOrEmpty(ReverserData.ReverseType) || string.IsNullOrEmpty(ReverserData.InputDirectory))

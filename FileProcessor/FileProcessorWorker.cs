@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using FileProcessor.Model;
 using Archiver.Model;
 using System.Text;
+using SharpCompress.Common;
 
 namespace FileProcessor
 {
@@ -108,7 +109,7 @@ namespace FileProcessor
                 stopwatch.Stop();
 
                 // Get the elapsed time in milliseconds
-                TimeSpan totalTimeTaken = TimeSpan.FromSeconds(stopwatch.ElapsedMilliseconds);
+                TimeSpan totalTimeTaken = TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds);
 
                 // Step 10: Write the overall statistics to the statistics file
                 StatisticsHelper.WriteOverallStatistics(totalLexemeCount, totalTimeTaken, reverserData.OutputFile, compresionResult);
@@ -131,8 +132,11 @@ namespace FileProcessor
             Directory.CreateDirectory(outputDirectoryPath);
             
             double progressStep = 1.0 / fileNames.Length;
-            //long numberOfInvertedFile = 0;
-            long totalNumberOfFiles = fileNames.Length;
+            
+            DirectoryInfo directoryInfo = new DirectoryInfo(reverserData.InputDirectory);
+            long totalDirectorySize = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories)
+                .Sum(file => file.Length);
+
 
             foreach (string fileNameWithPath in fileNames)
             {
@@ -145,9 +149,12 @@ namespace FileProcessor
                 reverserData.InputFile = Path.Combine(reverserData.InputDirectory, fileName);
                 await Task.Run(() => { ProcessFile(reverserData); });
 
-                totalNumberOfFiles--;
+
+                long fileSizeBytes = new FileInfo(reverserData.InputFile).Length;
+                totalDirectorySize -= fileSizeBytes;
+
                 stopwatch.Stop();
-                TimeSpan timeLeft = TimeSpan.FromSeconds(stopwatch.ElapsedMilliseconds * totalNumberOfFiles);
+                TimeSpan timeLeft = TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds * (totalDirectorySize / fileSizeBytes));
                 
                 updateProgress(progressStep, timeLeft);
             }

@@ -37,7 +37,7 @@ namespace TextReverserWPF.ViewModel
         bool uiEnabled = true;
 
         [ObservableProperty]
-        TimeSpan timeLeft;
+        string timeLeft;
 
         public bool IsCheckBoxVisible => ReverserData?.ReverseType == "Word";
     }

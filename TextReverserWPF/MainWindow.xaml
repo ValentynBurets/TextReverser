@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TextReverserWPF"
         mc:Ignorable="d"
-        Title="Текстовий інвертор" Height="350" Width="439">
-    <Grid Background="#FFE5E5E5" VerticalAlignment="Center" Height="321">
-        <GroupBox Header="Робота з файлами" Width="190" Margin="27,14,222,110" BorderBrush="Gray">
+        Title="Текстовий інвертор" Height="400" Width="439">
+    <Grid Background="#FFE5E5E5" VerticalAlignment="Center" Height="400">
+        <GroupBox Header="Робота з файлами" Width="190" Margin="27,14,222,174" BorderBrush="Gray">
             <StackPanel Margin="10,0,10,0" Height="188" HorizontalAlignment="Left" VerticalAlignment="Top">
                 <Button
                 x:Name="SelectInputFileBtn"
@@ -43,7 +43,7 @@
             />
             </StackPanel>
         </GroupBox>
-        <GroupBox Header="Параметри інвертування" Width="190" Margin="222,14,27,110" BorderBrush="Gray">
+        <GroupBox Header="Параметри інвертування" Width="190" Margin="222,14,27,174" BorderBrush="Gray">
             <StackPanel Margin="10,0,10,0" Height="117" VerticalAlignment="Top">
                 <Label Content="Тип інвертування" Margin="5,13,5,0" HorizontalContentAlignment="Stretch"/>
 
@@ -71,33 +71,52 @@
 
             </StackPanel>
         </GroupBox>
-        <Grid>
-        <ProgressBar 
-            x:Name="ProgressBar" 
-            Value="{Binding Progress}" 
-            Foreground="Blue" 
-            Minimum="0"
-            Maximum="1"
-            Margin="27,226,27,74" Width="NaN"
-            />
-        <Label x:Name="timeLeftLabel" Content="{Binding TimeLeft}" Foreground="Black" Margin="237,252,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="175" Height="18"/>
-        <Button 
-            x:Name="StartFileProcessingBtn"
-            Content="Інвертувати файл" 
-            Command="{Binding StartFileProcessingCommand}" 
-            FontSize="20" 
-            IsEnabled="{Binding UiEnabled}"
-                Margin="27,276,222,10" Width="NaN"
+        <GroupBox Header="Інвертування" BorderBrush="Gray" Margin="27,241,27,10">
+            <StackPanel>
+                <ProgressBar 
+                    x:Name="ProgressBar" 
+                    Value="{Binding Progress}" 
+                    Foreground="Blue" 
+                    Minimum="0"
+                    Maximum="1"
+                    Width="NaN"
+                    Height="20"
+                    Margin="0,10,0,0"
                 />
-            <Button 
-            x:Name="StartDirectoryProcessingBtn"
-            Content="Інвертувати папку" 
-            Command="{Binding StartDirectoryProcessingCommand}" 
-            FontSize="20" 
-            IsEnabled="{Binding UiEnabled}"
-                Margin="222,275,27,10" Width="NaN" RenderTransformOrigin="1.358,-0.233"
-                />
-        </Grid>
-        
+                <Label 
+                    x:Name="timeLeftLabel" 
+                    Content="{Binding TimeLeft}" 
+                    Foreground="Black" 
+                    Height="30"
+                    FontSize="15"
+                    Width="300" 
+                    HorizontalContentAlignment="Right" 
+                    />
+                <StackPanel 
+                    HorizontalAlignment="Center" 
+                    Orientation="Horizontal"
+                    Margin="0, 10, 0, 0">
+                    <Button 
+                        x:Name="StartFileProcessingBtn"
+                        Content="Інвертувати файл" 
+                        Command="{Binding StartFileProcessingCommand}" 
+                        FontSize="20" 
+                        IsEnabled="{Binding UiEnabled}"
+                        Width="NaN"
+                        Margin="10,0,10,0"
+                    />
+                    <Button 
+                        x:Name="StartDirectoryProcessingBtn"
+                        Content="Інвертувати папку" 
+                        Command="{Binding StartDirectoryProcessingCommand}" 
+                        FontSize="20" 
+                        IsEnabled="{Binding UiEnabled}"
+                        Width="NaN" RenderTransformOrigin="1.358,-0.233" 
+                        HorizontalAlignment="Right"
+                        Margin="10,0,10,0"
+                    />
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
     </Grid>
 </Window>
