@@ -35,6 +35,6 @@ namespace TextReverser.ViewModel
         string timeLeft;
 
 
-        public bool IsCheckBoxVisible => ReverserData?.ReverseType == "Word";
+        public Visibility IsCheckBoxVisible => (ReverserData?.ReverseType == "Word" ? Visibility.Visible : Visibility.Hidden);
     }
 }
