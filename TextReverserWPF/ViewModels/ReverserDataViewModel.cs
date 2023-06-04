@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using FileProcessor;
+using FileProcessor.Model;
 using Microsoft.Win32;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -36,8 +38,7 @@ namespace TextReverserWPF.ViewModel
                 OpenFileDialog openFileDialog = new OpenFileDialog();
                 openFileDialog.Multiselect = false;
                 openFileDialog.Filter = textfileFilter;
-                openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-              
+         
                 if (openFileDialog.ShowDialog() != null)
                 {
                     ReverserData.InputFile = openFileDialog.FileName;
@@ -56,19 +57,14 @@ namespace TextReverserWPF.ViewModel
         {
             try
             {
-                var dialog = new OpenFileDialog
+                CommonOpenFileDialog dialog = new CommonOpenFileDialog();
+                
+                dialog.IsFolderPicker = true;
+                
+                if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
                 {
-                    ValidateNames = false,
-                    CheckFileExists = false,
-                    CheckPathExists = true,
-                    FileName = ReverserData.InputDirectory
-                };
-                string folder = null;
-                if (dialog.ShowDialog() == true && dialog.FileName != null)
-                {
-                    folder = System.IO.Path.GetDirectoryName(dialog.FileName);
-                    ReverserData.InputDirectory = folder;
-                    InputDirectoryNameText = Path.GetFileName(folder);
+                    ReverserData.InputDirectory = dialog.FileName;
+                    InputDirectoryNameText = Path.GetFileName(dialog.FileName);
                 }
             }
             catch (Exception ex)
@@ -107,7 +103,7 @@ namespace TextReverserWPF.ViewModel
             Mutex mutexTimeSync = new Mutex();
             try
             {
-                if (string.IsNullOrEmpty(ReverserData.ReverseType) || string.IsNullOrEmpty(ReverserData.InputFile))
+                if (string.IsNullOrEmpty(ReverserData.ReverseType) || string.IsNullOrEmpty(ReverserData.InputFile) || ReverseTypeSelected == "")
                 {
                     string errorMessage = "Missing information! Please provide all required fields.";
                     MessageBox.Show(errorMessage, "Alert", MessageBoxButton.OK, MessageBoxImage.Warning); 
@@ -116,14 +112,16 @@ namespace TextReverserWPF.ViewModel
 
                 ReverserData.ReverseType = ReverseTypeSelected;
                 ReverserData.ReverseType = ReverserData.ReverseType.ToLower();
+                var fileInfo = new FileInfo(ReverserData.InputFile);
+                ReverserData.ExtensionType = fileInfo.Extension;
 
                 if (ReverserData.OutputFile == "" || ReverserData.OutputFile == null)
                 {
-                    string inputFileName = Path.GetFileName(ReverserData.InputFile);
+                    string inputFileName = Path.GetFileNameWithoutExtension(ReverserData.InputFile);
                     ReverserData.OutputFile = $"{Path.GetDirectoryName(ReverserData.InputFile)}/I{ReverserData.ReverseType[0]}_{inputFileName}.{ReverserData.ExtensionType}";
                 }
 
-                long totalSizeLeft = new FileInfo(ReverserData.InputFile).Length;
+                long totalSizeLeft = fileInfo.Length;
 
                 Action<TimeSpan> updateTimeLeftLable = (TimeSpan timeLeft) =>
                 {
@@ -131,6 +129,15 @@ namespace TextReverserWPF.ViewModel
                                 + (timeLeft.Days != 0 ? $" : {timeLeft.Days} днів" : "")
                                 + (timeLeft.Minutes != 0 ? $" : {timeLeft.Minutes} хвилин" : "")
                                 + (timeLeft.Seconds != 0 ? $" : {timeLeft.Seconds} секунд" : "0 секунд");
+
+                };
+
+                Action<TimeSpan> updateTimeSpent = (TimeSpan timeSpent) =>
+                {
+                    TimeSpent = "Витрачено часу"
+                                + (timeSpent.Days != 0 ? $" : {timeSpent.Days} днів" : "")
+                                + (timeSpent.Minutes != 0 ? $" : {timeSpent.Minutes} хвилин" : "")
+                                + (timeSpent.Seconds != 0 ? $" : {timeSpent.Seconds} секунд" : "0 секунд");
 
                 };
 
@@ -151,7 +158,7 @@ namespace TextReverserWPF.ViewModel
                     mutexTimeSync.ReleaseMutex();
                 };
 
-                long fileSize = (new FileInfo(ReverserData.InputFile)).Length;
+                long fileSize = fileInfo.Length;
                 int bufferSize = 8192;
                 int maxThreads = Environment.ProcessorCount; // Number of threads to use for parallel reading
 
@@ -162,10 +169,14 @@ namespace TextReverserWPF.ViewModel
                 var updateProgress = () => Progress += progressStep;
 
                 UiEnabled = false;
+
+                Stopwatch stopWatchProces = Stopwatch.StartNew();
+
                 // Start a new thread or use a Task to call the ProcessFile method
-                await Task.Run(() => { FileProcessorWorker.ProcessFile(ReverserData, updateFileSizeLeft, updateProgress); });
+                await Task.Run(() => { FileProcessorWorker.ProcessFile(ReverserData, updateFileSizeLeft, updateProgress, stopWatchProces, updateTimeSpent); });
                 
                 ReverserData.OutputFile = "";
+                stopWatchProces.Stop();
                 MessageBox.Show("Документ інвертовано", "Інформація", MessageBoxButton.OK, MessageBoxImage.Information);
                 UiEnabled = true;
                 Progress = 0;
@@ -198,6 +209,15 @@ namespace TextReverserWPF.ViewModel
 
                 };
 
+                Action<TimeSpan> updateTimeSpent = (TimeSpan timeSpent) =>
+                {
+                    TimeSpent = "Витрачено часу"
+                                + (timeSpent.Days != 0 ? $" : {timeSpent.Days} днів" : "")
+                                + (timeSpent.Minutes != 0 ? $" : {timeSpent.Minutes} хвилин" : "")
+                                + (timeSpent.Seconds != 0 ? $" : {timeSpent.Seconds} секунд" : "0 секунд");
+
+                };
+
                 if (string.IsNullOrEmpty(ReverserData.ReverseType) || string.IsNullOrEmpty(ReverserData.InputDirectory))
                 {
                     string errorMessage = "Missing information! Please provide all required fields.";
@@ -214,10 +234,10 @@ namespace TextReverserWPF.ViewModel
                     string inputDirectory = Path.GetFileName(ReverserData.InputDirectory);
                     ReverserData.OutputFile = $"{Path.GetDirectoryName(ReverserData.InputFile)}/I{ReverserData.ReverseType[0]}_{inputDirectory}.{ReverserData.ExtensionType}";
                 }
-
+                Stopwatch stopWatchProces = Stopwatch.StartNew();
                 // Start a new thread or use a Task to call the ProcessFile method
-                await FileProcessorWorker.ProcessDirectory(ReverserData, updateProgress, updateTimeLeftLable);
-  
+                await FileProcessorWorker.ProcessDirectory(ReverserData, updateProgress, updateTimeLeftLable, stopWatchProces, updateTimeSpent);
+                
                 if (Progress >= 1)
                 {
                     MessageBox.Show("Папку інвертовано", "Іноформація", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -225,6 +245,8 @@ namespace TextReverserWPF.ViewModel
                     Progress = 0;
                     UiEnabled = true;
                 }
+
+                stopWatchProces.Stop();
                 ReverserData.OutputFile = "";
                 TimeLeft = "";
             }

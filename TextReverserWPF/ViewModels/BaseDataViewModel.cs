@@ -20,7 +20,7 @@ namespace TextReverserWPF.ViewModel
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsCheckBoxVisible))]
-        string reverseTypeSelected;
+        string reverseTypeSelected = "Char";
 
         [ObservableProperty]
         ReverseData reverserData;
@@ -43,6 +43,12 @@ namespace TextReverserWPF.ViewModel
         [ObservableProperty]
         string timeLeft;
 
-        public Visibility IsCheckBoxVisible => (reverseTypeSelected == "Word" ? Visibility.Visible : Visibility.Hidden);
+        [ObservableProperty]
+        string timeSpent;
+
+        public Visibility IsCheckBoxVisible => (
+            (reverseTypeSelected == "Word" || reverseTypeSelected == "Char") 
+                                                    ? Visibility.Visible 
+                                                    : Visibility.Hidden);
     }
 }

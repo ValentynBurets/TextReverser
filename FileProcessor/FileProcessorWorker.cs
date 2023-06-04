@@ -18,7 +18,7 @@ namespace FileProcessor
         public static BlockingCollection<double> reversalTimeOfTenKiloBites = new BlockingCollection<double>();
         private static Mutex mutexTimeSync = new Mutex();
 
-        public static void ProcessFile(ReverseData reverserData, Action<long> updateFileSizeLeft, Func<double>? updateProgress)
+        public static void ProcessFile(ReverseData reverserData, Action<long> updateFileSizeLeft, Func<double>? updateProgress, Stopwatch stopWatchProces, Action<TimeSpan> updateTimeSpent)
         {
             string inputFileName = Path.GetFileName(reverserData.InputFile);
 
@@ -42,7 +42,6 @@ namespace FileProcessor
                 // Step 2: Determine the size of the file
                 var fileInfo = new FileInfo(reverserData.InputFile);
                 long fileSize = fileInfo.Length;
-                reverserData.ExtensionType = fileInfo.Extension;
 
                 Encoding EncodingType = EncodingHelper.DetectEncoding(reverserData.InputFile);
 
@@ -92,6 +91,8 @@ namespace FileProcessor
                         double timeSpentToReverse = stopWatchPortionTime.ElapsedMilliseconds / portionSizeInKilobites;
                         reversalTimeOfTenKiloBites.Add(timeSpentToReverse);
 
+                        updateTimeSpent(stopWatchProces.Elapsed);
+                        
                         if (updateProgress != null)
                         {
                             updateProgress();
@@ -143,12 +144,12 @@ namespace FileProcessor
             }
         }
 
-        public static async Task ProcessDirectory(ReverseData reverserData, Func<double>? updateProgress, Action<TimeSpan> updateTimeLeftLable)
+        public static async Task ProcessDirectory(ReverseData reverserData, Func<double>? updateProgress, Action<TimeSpan> updateTimeLeftLable, Stopwatch stopWatchProces, Action<TimeSpan> updateTimeSpent)
         {
             string[] fileNames = Directory.GetFiles(reverserData.InputDirectory);
             string oneDirectoryBackPath = Path.GetDirectoryName(reverserData.InputDirectory);
             string inputDirectoryName = Path.GetFileName(reverserData.InputDirectory);
-            string outputDirectoryPath = Path.Combine(oneDirectoryBackPath, $"i{reverserData.ReverseType[0]}_{inputDirectoryName}_{DateTime.Now.Second}");
+            string outputDirectoryPath = Path.Combine(oneDirectoryBackPath, $"I{reverserData.ReverseType[0]}_{inputDirectoryName}_{DateTime.Now.Second}");
             Directory.CreateDirectory(outputDirectoryPath);
             
             DirectoryInfo directoryInfo = new DirectoryInfo(reverserData.InputDirectory);
@@ -162,11 +163,25 @@ namespace FileProcessor
                 mutexTimeSync.WaitOne();
 
                 long reversalTimeOfTenKiloBitesCount = reversalTimeOfTenKiloBites.Count;
-                if ((reversalTimeOfTenKiloBitesCount % 10 == 0 && reversalTimeOfTenKiloBitesCount < 100 || reversalTimeOfTenKiloBitesCount % 1000 == 0) && reversalTimeOfTenKiloBitesCount > 0)
+                if (reversalTimeOfTenKiloBitesCount % 300 == 0 && reversalTimeOfTenKiloBitesCount > 100)
                 {
-                    double averageValue = reversalTimeOfTenKiloBites.Where(item => !double.IsInfinity(item)).Average();
+                    double averageValue;
 
-                    TimeSpan averageTimeSpan = TimeSpan.FromMilliseconds(averageValue * (totalSizeLeft / 1024));
+                    if (reversalTimeOfTenKiloBitesCount < 3000)
+                    {
+                        averageValue = reversalTimeOfTenKiloBites
+                                                    .Where(item => !double.IsInfinity(item))
+                                                    .Average();
+                    }
+                    else
+                    {
+                        averageValue = reversalTimeOfTenKiloBites
+                                                    .Skip(reversalTimeOfTenKiloBites.Count - 1000).Take(1000)
+                                                    .Where(item => !double.IsInfinity(item))
+                                                    .Average();
+                    }
+
+                    TimeSpan averageTimeSpan = TimeSpan.FromMilliseconds(averageValue / 5 * (totalSizeLeft / 1024));
 
                     updateTimeLeftLable(averageTimeSpan);
                 }
@@ -181,7 +196,7 @@ namespace FileProcessor
                 string tempOutputFileName = $"I{reverserData.ReverseType[0]}_{fileName}";
                 reverserData.OutputFile = Path.Combine(outputDirectoryPath, tempOutputFileName);
                 reverserData.InputFile = Path.Combine(reverserData.InputDirectory, fileName);
-                await Task.Run(() => { ProcessFile(reverserData, updateFileSizeLeft, null); });
+                await Task.Run(() => { ProcessFile(reverserData, updateFileSizeLeft, null, stopWatchProces, updateTimeSpent); });
                 
                 if(updateProgress != null)
                 {
@@ -209,33 +224,63 @@ namespace FileProcessor
             switch (reverseType)
             {
                 case "char":
-                    char[] charArray = text.ToCharArray();
-                    List<char> newCharArray = new List<char>();
-
-                    for (int i = charArray.Length - 1; i >= 0; i--)
+                    if (removeSigns)
                     {
-                        if (charArray[i] != '\u0000')
+                        //Regex regexLetters = new Regex(@"[^\p{L}0-9\s]");
+                        //string textWithoutSigns = regexLetters.Replace(text, "");
+
+                        Regex regexForWords2 = new Regex(@"[^\p{L}]*\p{Z}[^\p{L}]*");
+                        string textWithoutSigns = regexForWords2.Replace(text, " ");
+                      
+
+                        char[] resCharArray = textWithoutSigns.ToCharArray();
+                        Array.Reverse(resCharArray);
+                        lexemeCount = resCharArray.Length;
+
+                        return string.Join("", resCharArray);
+                    }
+                    else
+                    {
+                        char[] charArray = text.ToCharArray();
+                        List<char> newCharArray = new List<char>();
+
+                        for (int i = charArray.Length - 1; i >= 0; i--)
                         {
-                            if (charArray[i] == '\n' && i - 1 >= 0 && charArray[i - 1] == '\r')
+                            if (charArray[i] != '\u0000')
                             {
-                                newCharArray.Add('\r');
-                                newCharArray.Add('\n');
-                                i--;
-                            }
-                            else
-                            {
-                                newCharArray.Add(charArray[i]);
+                                if (charArray[i] == '\n' && i - 1 >= 0 && charArray[i - 1] == '\r')
+                                {
+                                    newCharArray.Add('\r');
+                                    newCharArray.Add('\n');
+                                    i--;
+                                }
+                                else
+                                {
+                                    newCharArray.Add(charArray[i]);
+                                }
                             }
                         }
+
+                        lexemeCount = charArray.Length;
+
+                        return new string(newCharArray.ToArray());
                     }
-
-                    lexemeCount = charArray.Length;
-                    
-                    return new string(newCharArray.ToArray());
-
                 case "word":
+                    //regular exprethion for deleting sings
                     Regex regexForWords = new Regex(@"[^\p{L}]*\p{Z}[^\p{L}]*");
+
+                    //regular expretion for splitiong into words
                     Regex regexSplitByWords = new Regex(@"\p{Z}+");
+                    
+                    //regular expretion for detecting non-letter signs
+                    Regex regexNonLetter = new Regex(@"[a-zA-Z]");
+
+                    //end of sentence or punctuation marck
+                    Regex regexForPunctuationAndSentence = new Regex(@"[\.!\?…⁉️⁈‼️⁇,:;]");
+
+                    //letters, numbers and signs(end of sentence or punctuation marcks)
+                    Regex regexForSignsAndLetters = new Regex(@"[\.!\?…⁉️⁈‼️⁇,:;'`’""-_0-9]|[a-zA-Z]");
+
                     string[] words;
                     
                     if (removeSigns)
@@ -246,15 +291,41 @@ namespace FileProcessor
                     {
                         words = regexSplitByWords.Split(text);
                     }
-                    Array.Reverse(words);
+
+                    List<string> wordesInverted = new List<string>();
+                    for (int i = words.Length - 1; i >= 0; i--)
+                    {
+                        StringBuilder tempWord = new StringBuilder(string.Join("", regexForSignsAndLetters.Matches(words[i])));
+                        MatchCollection matchSignsArray = regexForPunctuationAndSentence.Matches(tempWord.ToString());
+                        
+                        if (matchSignsArray.Count > 0)
+                        {
+                            int tempEndIndex = tempWord.Length - 2;
+                            for (int matchArrayIndex = matchSignsArray.Count - 1; matchArrayIndex >= 0; matchArrayIndex--)
+                            {
+                                int indexOfSign = tempWord.ToString().IndexOf(matchSignsArray[matchArrayIndex].ToString(), 0);
+
+                                if(indexOfSign > tempEndIndex)
+                                {
+                                    int tempWordSize = tempWord.Length - 1;
+                                    tempWord.Remove(indexOfSign, 1);
+                                    tempWord.Insert(tempWordSize - indexOfSign, matchSignsArray[matchArrayIndex].ToString());
+                                    tempEndIndex--;
+                                }
+                            }
+                        }
+
+                        wordesInverted.Add(tempWord.ToString());
+                    }
+                    //Array.Reverse(words);
                     lexemeCount = words.Count();
-                    string wordRes = string.Join(" ", words);
+                    string wordRes = string.Join(" ", wordesInverted);
 
                     return wordRes.Replace("\u0000", "");
 
                 case "sentence":
                     // Use regular expression to match sentences with their end signs
-                    Regex regexForSentence = new Regex(@"(?<=[\.!\?…⁉️⁈‼️⁇])\s+");
+                    Regex regexForSentence = new Regex(@"[\.!\?…⁉️⁈‼️⁇]");
                     var matches = regexForSentence.Split(text);
                     Array.Reverse(matches);
                     lexemeCount = matches.Count();

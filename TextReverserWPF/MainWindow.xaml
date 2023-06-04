@@ -5,13 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TextReverserWPF"
         mc:Ignorable="d"
-        Title="Текстовий інвертор" Height="500" Width="439">
+        Title="Текстовий інвертор" Height="500" Width="500">
     <Grid Background="#FFE5E5E5" VerticalAlignment="Center" Height="496">
         <Grid.RowDefinitions>
             <RowDefinition Height="231*"/>
             <RowDefinition Height="17*"/>
         </Grid.RowDefinitions>
-        <GroupBox Header="Робота з файлами" Width="190" Margin="27,14,222,176" BorderBrush="Gray">
+        <GroupBox Header="Робота з файлами" Width="210" Margin="27,25,263,176" BorderBrush="Gray">
             <StackPanel Height="251" HorizontalAlignment="Center" VerticalAlignment="Top" Width="138">
                 <Button
                 x:Name="SelectInputFileBtn"
@@ -47,7 +47,7 @@
             />
             </StackPanel>
         </GroupBox>
-        <GroupBox Header="Параметри інвертування" Width="190" Margin="222,14,27,176" BorderBrush="Gray">
+        <GroupBox Header="Параметри інвертування" Width="210" Margin="263,25,27,176" BorderBrush="Gray">
             <StackPanel Height="174" VerticalAlignment="Top" HorizontalAlignment="Center" Width="138">
                 <Label Content="Тип інвертування" Margin="5,13,5,0" HorizontalContentAlignment="Stretch"/>
 
@@ -78,8 +78,8 @@
                 </StackPanel>
             </StackPanel>
         </GroupBox>
-        <GroupBox Header="Інвертування" BorderBrush="Gray" Margin="27,300,27,10">
-            <StackPanel Height="138">
+        <GroupBox Header="Інвертування" BorderBrush="Gray" Margin="27,300,27,17" Grid.RowSpan="2">
+            <StackPanel Height="152">
                 <ProgressBar 
                     x:Name="ProgressBar" 
                     Value="{Binding Progress}" 
@@ -93,6 +93,15 @@
                 <Label 
                     x:Name="timeLeftLabel" 
                     Content="{Binding TimeLeft}" 
+                    Foreground="Black" 
+                    Height="30"
+                    FontSize="15"
+                    Width="300" 
+                    HorizontalContentAlignment="Right" 
+                    />
+                <Label 
+                    x:Name="timeSpentLabel" 
+                    Content="{Binding TimeSpent}" 
                     Foreground="Black" 
                     Height="30"
                     FontSize="15"
