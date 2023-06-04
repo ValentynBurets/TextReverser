@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using FileProcessor;
-using FileProcessor.Model;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -10,7 +9,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Documents;
 
 namespace TextReverserWPF.ViewModel
 {
@@ -48,7 +46,7 @@ namespace TextReverserWPF.ViewModel
                 if (openFileDialog.ShowDialog() != null)
                 {
                     ReverserData.InputFile = openFileDialog.FileName;
-                    InputFileNameText = openFileDialog.FileName.ToString();
+                    InputFileNameText = Path.GetFileName(openFileDialog.FileName);
                 }
             }
             catch (Exception ex)
@@ -75,7 +73,7 @@ namespace TextReverserWPF.ViewModel
                 {
                     folder = System.IO.Path.GetDirectoryName(dialog.FileName);
                     ReverserData.InputDirectory = folder;
-                    InputDirectoryNameText = folder.ToString();
+                    InputDirectoryNameText = Path.GetFileName(folder);
                 }
             }
             catch (Exception ex)
@@ -98,7 +96,7 @@ namespace TextReverserWPF.ViewModel
                 if (openFileDialog.ShowDialog() != null)
                 {
                     ReverserData.OutputFile = openFileDialog.FileName;
-                    OutputFileNameText = openFileDialog.FileName;
+                    OutputFileNameText = Path.GetFileName(openFileDialog.FileName);
                 }
             }
             catch (Exception ex)
@@ -157,12 +155,23 @@ namespace TextReverserWPF.ViewModel
                     mutexTimeSync.ReleaseMutex();
                 };
 
+                long fileSize = (new FileInfo(ReverserData.InputFile)).Length;
+                int bufferSize = 8192;
+                int maxThreads = Environment.ProcessorCount; // Number of threads to use for parallel reading
+
+                int threadCount = Math.Min(maxThreads, (int)Math.Ceiling((double)fileSize / bufferSize));
+
+                double progressStep = 1.0 / threadCount;
+
+                var updateProgress = () => Progress += progressStep;
+
+                UiEnabled = false;
                 // Start a new thread or use a Task to call the ProcessFile method
-                await Task.Run(() => { FileProcessorWorker.ProcessFile(ReverserData, updateFileSizeLeft); });
+                await Task.Run(() => { FileProcessorWorker.ProcessFile(ReverserData, updateFileSizeLeft, updateProgress); });
                 
-                Progress = 1;
                 ReverserData.OutputFile = "";
                 MessageBox.Show("Документ інвертовано", "Інформація", MessageBoxButton.OK, MessageBoxImage.Information);
+                UiEnabled = true;
                 Progress = 0;
                 TimeLeft = "";
             }
@@ -179,8 +188,10 @@ namespace TextReverserWPF.ViewModel
         {
             try
             {
-                
-                Action<double> updateProgress = (double progressStep) => Progress += progressStep;
+                string[] fileNames = Directory.GetFiles(ReverserData.InputDirectory);
+                double progressStep = 1.0 / fileNames.Length;
+
+                var updateProgress = () => Progress += progressStep;
 
                 Action<TimeSpan> updateTimeLeftLable = (TimeSpan timeLeft) =>
                 {

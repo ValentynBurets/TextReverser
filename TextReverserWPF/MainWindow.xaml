@@ -5,10 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TextReverserWPF"
         mc:Ignorable="d"
-        Title="Текстовий інвертор" Height="400" Width="439">
-    <Grid Background="#FFE5E5E5" VerticalAlignment="Center" Height="400">
-        <GroupBox Header="Робота з файлами" Width="190" Margin="27,14,222,174" BorderBrush="Gray">
-            <StackPanel Margin="10,0,10,0" Height="188" HorizontalAlignment="Left" VerticalAlignment="Top">
+        Title="Текстовий інвертор" Height="500" Width="439">
+    <Grid Background="#FFE5E5E5" VerticalAlignment="Center" Height="496">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="231*"/>
+            <RowDefinition Height="17*"/>
+        </Grid.RowDefinitions>
+        <GroupBox Header="Робота з файлами" Width="190" Margin="27,14,222,176" BorderBrush="Gray">
+            <StackPanel Height="251" HorizontalAlignment="Center" VerticalAlignment="Top" Width="138">
                 <Button
                 x:Name="SelectInputFileBtn"
                 Content="Вибрати файл"
@@ -32,7 +36,7 @@
                     Command="{Binding SelectOutputFileCommand}" 
                     IsEnabled="{Binding UiEnabled}" Margin="0,5,0,0"
                 />
-                <Label x:Name="outputFileLabel" Content="{Binding OutputFileNameText}" Foreground="White" Margin="5,5,5,0" HorizontalContentAlignment="Stretch"/>
+                <Label x:Name="outputFileLabel" Content="{Binding OutputFileNameText}" Foreground="Black" Margin="5,5,5,0" HorizontalContentAlignment="Stretch"/>
                 <Label Content="Тип Архівування" Margin="0,5,0,0"/>
                 <ComboBox 
                     x:Name="archiveTypePicker"
@@ -43,8 +47,8 @@
             />
             </StackPanel>
         </GroupBox>
-        <GroupBox Header="Параметри інвертування" Width="190" Margin="222,14,27,174" BorderBrush="Gray">
-            <StackPanel Margin="10,0,10,0" Height="117" VerticalAlignment="Top">
+        <GroupBox Header="Параметри інвертування" Width="190" Margin="222,14,27,176" BorderBrush="Gray">
+            <StackPanel Height="174" VerticalAlignment="Top" HorizontalAlignment="Center" Width="138">
                 <Label Content="Тип інвертування" Margin="5,13,5,0" HorizontalContentAlignment="Stretch"/>
 
                 <ComboBox 
@@ -54,25 +58,29 @@
                         IsEnabled="{Binding UiEnabled}"
                         SelectedIndex="0" Margin="0,10,0,0"
                     />
-                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                <StackPanel 
+                    HorizontalAlignment="Center" 
+                    Orientation="Horizontal" 
+                    Visibility="{Binding IsCheckBoxVisible}">
                     <Label
                         Padding="5,0,0,0"
                         FontSize="10"
                         HorizontalAlignment="Center"
-                        Content="Видалити знаки"/>
+                        Content="Видалити знаки"
+                        IsEnabled="{Binding UiEnabled, Mode=TwoWay}"
+                        />
                     <CheckBox 
                         HorizontalAlignment="Center"
                         x:Name="HideButtonCheckBox" 
                         IsChecked="{Binding ReverserData.RemoveSigns}"
-                        IsEnabled="{Binding UiEnabled}"
-               />
+                        
+                        Visibility="{Binding IsCheckBoxVisible}"
+                    />
                 </StackPanel>
-
-
             </StackPanel>
         </GroupBox>
-        <GroupBox Header="Інвертування" BorderBrush="Gray" Margin="27,241,27,10">
-            <StackPanel>
+        <GroupBox Header="Інвертування" BorderBrush="Gray" Margin="27,300,27,10">
+            <StackPanel Height="138">
                 <ProgressBar 
                     x:Name="ProgressBar" 
                     Value="{Binding Progress}" 

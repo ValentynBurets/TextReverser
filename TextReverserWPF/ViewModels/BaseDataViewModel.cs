@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using FileProcessor.Model;
 using System;
+using System.Windows;
 
 namespace TextReverserWPF.ViewModel
 {
@@ -39,7 +40,10 @@ namespace TextReverserWPF.ViewModel
 
         [ObservableProperty]
         string timeLeft;
-
-        public bool IsCheckBoxVisible => ReverserData?.ReverseType == "Word";
+ 
+        public Visibility IsCheckBoxVisible => 
+            (ReverserData?.ReverseType == "Word" 
+                                            ? System.Windows.Visibility.Visible 
+                                            : System.Windows.Visibility.Collapsed);
     }
 }

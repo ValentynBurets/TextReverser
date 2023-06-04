@@ -18,7 +18,7 @@ namespace FileProcessor
         public static BlockingCollection<double> reversalTimeOfTenKiloBites = new BlockingCollection<double>();
         private static Mutex mutexTimeSync = new Mutex();
 
-        public static void ProcessFile(ReverseData reverserData, Action<long> updateFileSizeLeft)
+        public static void ProcessFile(ReverseData reverserData, Action<long> updateFileSizeLeft, Func<double>? updateProgress)
         {
             string inputFileName = Path.GetFileName(reverserData.InputFile);
 
@@ -52,6 +52,7 @@ namespace FileProcessor
                 // Step 4: Divide the file into equal portions based on the number of threads
                 long portionSize = fileSize / threadCount;
                 List<string> reversedTextPortions = new List<string>(threadCount);
+
                 List<Thread> threads = new List<Thread>(threadCount);
 
                 // Step 5: For each portion
@@ -90,6 +91,11 @@ namespace FileProcessor
                         double portionSizeInKilobites = (double)portionSize / 1024;
                         double timeSpentToReverse = stopWatchPortionTime.ElapsedMilliseconds / portionSizeInKilobites;
                         reversalTimeOfTenKiloBites.Add(timeSpentToReverse);
+
+                        if (updateProgress != null)
+                        {
+                            updateProgress();
+                        }
                     });
 
                     threads.Add(thread);
@@ -137,15 +143,13 @@ namespace FileProcessor
             }
         }
 
-        public static async Task ProcessDirectory(ReverseData reverserData, Action<double> updateProgress, Action<TimeSpan> updateTimeLeftLable)
+        public static async Task ProcessDirectory(ReverseData reverserData, Func<double>? updateProgress, Action<TimeSpan> updateTimeLeftLable)
         {
             string[] fileNames = Directory.GetFiles(reverserData.InputDirectory);
             string oneDirectoryBackPath = Path.GetDirectoryName(reverserData.InputDirectory);
             string inputDirectoryName = Path.GetFileName(reverserData.InputDirectory);
             string outputDirectoryPath = Path.Combine(oneDirectoryBackPath, $"i{reverserData.ReverseType[0]}_{inputDirectoryName}_{DateTime.Now.Second}");
             Directory.CreateDirectory(outputDirectoryPath);
-            
-            double progressStep = 1.0 / fileNames.Length;
             
             DirectoryInfo directoryInfo = new DirectoryInfo(reverserData.InputDirectory);
             long totalSizeLeft = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories)
@@ -158,7 +162,7 @@ namespace FileProcessor
                 mutexTimeSync.WaitOne();
 
                 long reversalTimeOfTenKiloBitesCount = reversalTimeOfTenKiloBites.Count;
-                if (reversalTimeOfTenKiloBitesCount % 10 == 0 && reversalTimeOfTenKiloBitesCount < 100 || reversalTimeOfTenKiloBitesCount % 1000 == 0 && reversalTimeOfTenKiloBitesCount > 0)
+                if ((reversalTimeOfTenKiloBitesCount % 10 == 0 && reversalTimeOfTenKiloBitesCount < 100 || reversalTimeOfTenKiloBitesCount % 1000 == 0) && reversalTimeOfTenKiloBitesCount > 0)
                 {
                     double averageValue = reversalTimeOfTenKiloBites.Where(item => !double.IsInfinity(item)).Average();
 
@@ -177,9 +181,12 @@ namespace FileProcessor
                 string tempOutputFileName = $"I{reverserData.ReverseType[0]}_{fileName}";
                 reverserData.OutputFile = Path.Combine(outputDirectoryPath, tempOutputFileName);
                 reverserData.InputFile = Path.Combine(reverserData.InputDirectory, fileName);
-                await Task.Run(() => { ProcessFile(reverserData, updateFileSizeLeft); });
+                await Task.Run(() => { ProcessFile(reverserData, updateFileSizeLeft, null); });
                 
-                updateProgress(progressStep);
+                if(updateProgress != null)
+                {
+                    updateProgress();
+                }
             }
 
             reversalTimeOfTenKiloBites = new BlockingCollection<double>();
@@ -199,8 +206,6 @@ namespace FileProcessor
 
         public static string ReverseText(string text, string reverseType, bool removeSigns, out int lexemeCount)
         {
-            //text = text.Replace("\n", "");
-
             switch (reverseType)
             {
                 case "char":
@@ -227,10 +232,6 @@ namespace FileProcessor
                     lexemeCount = charArray.Length;
                     
                     return new string(newCharArray.ToArray());
-                    
-                    //Array.Reverse(charArray);
-                    
-                    //return new string(charArray);
 
                 case "word":
                     Regex regexForWords = new Regex(@"[^\p{L}]*\p{Z}[^\p{L}]*");
