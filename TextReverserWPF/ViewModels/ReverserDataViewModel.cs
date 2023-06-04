@@ -126,7 +126,7 @@ namespace TextReverserWPF.ViewModel
                 if (ReverserData.OutputFile == "" || ReverserData.OutputFile == null)
                 {
                     string inputFileName = Path.GetFileName(ReverserData.InputFile);
-                    ReverserData.OutputFile = $"{Path.GetDirectoryName(ReverserData.InputFile)}/i{ReverserData.ReverseType[0]}_{inputFileName}.{ReverserData.ExtensionType}";
+                    ReverserData.OutputFile = $"{Path.GetDirectoryName(ReverserData.InputFile)}/I{ReverserData.ReverseType[0]}_{inputFileName}.{ReverserData.ExtensionType}";
                 }
 
                 long totalSizeLeft = new FileInfo(ReverserData.InputFile).Length;
@@ -202,7 +202,7 @@ namespace TextReverserWPF.ViewModel
                 if (ReverserData.OutputFile == "" || ReverserData.OutputFile == null)
                 {
                     string inputDirectory = Path.GetFileName(ReverserData.InputDirectory);
-                    ReverserData.OutputFile = $"{Path.GetDirectoryName(ReverserData.InputFile)}/i{ReverserData.ReverseType[0]}_{inputDirectory}.{ReverserData.ExtensionType}";
+                    ReverserData.OutputFile = $"{Path.GetDirectoryName(ReverserData.InputFile)}/I{ReverserData.ReverseType[0]}_{inputDirectory}.{ReverserData.ExtensionType}";
                 }
 
                 // Start a new thread or use a Task to call the ProcessFile method

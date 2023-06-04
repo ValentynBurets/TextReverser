@@ -174,7 +174,7 @@ namespace FileProcessor
             {
                 string currentFileNameWithPath = fileNameWithPath;
                 string fileName = Path.GetFileName(currentFileNameWithPath);
-                string tempOutputFileName = $"i{reverserData.ReverseType[0]}_{fileName}";
+                string tempOutputFileName = $"I{reverserData.ReverseType[0]}_{fileName}";
                 reverserData.OutputFile = Path.Combine(outputDirectoryPath, tempOutputFileName);
                 reverserData.InputFile = Path.Combine(reverserData.InputDirectory, fileName);
                 await Task.Run(() => { ProcessFile(reverserData, updateFileSizeLeft); });
