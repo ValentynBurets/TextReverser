@@ -1,7 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using FileProcessor.Model;
 using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Xml.Serialization;
 
 namespace TextReverserWPF.ViewModel
 {
@@ -17,14 +20,13 @@ namespace TextReverserWPF.ViewModel
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsCheckBoxVisible))]
+        string reverseTypeSelected;
+
+        [ObservableProperty]
         ReverseData reverserData;
 
         [ObservableProperty]
-        string title;
-
-        [ObservableProperty]
         string inputFileNameText;
-
 
         [ObservableProperty]
         string outputFileNameText;
@@ -41,6 +43,6 @@ namespace TextReverserWPF.ViewModel
         [ObservableProperty]
         string timeLeft;
 
-        public Visibility IsCheckBoxVisible => (ReverserData?.ReverseType == "Word" ? Visibility.Visible : Visibility.Hidden);
+        public Visibility IsCheckBoxVisible => (reverseTypeSelected == "Word" ? Visibility.Visible : Visibility.Hidden);
     }
 }

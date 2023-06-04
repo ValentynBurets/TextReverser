@@ -54,7 +54,7 @@
                 <ComboBox 
                         x:Name="reverseTypePicker"
                         ItemsSource="{Binding ReverseTypes}"
-                        SelectedItem="{Binding ReverserData.ReverseType, Mode=TwoWay}" 
+                        SelectedItem="{Binding ReverseTypeSelected, Mode=TwoWay}" 
                         IsEnabled="{Binding UiEnabled}"
                         SelectedIndex="0" Margin="0,10,0,0"
                     />

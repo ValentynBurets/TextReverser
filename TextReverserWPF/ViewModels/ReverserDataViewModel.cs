@@ -28,11 +28,6 @@ namespace TextReverserWPF.ViewModel
             "none",
         };
 
-        public ReverserDataViewModel()
-        {
-            Title = "TextReverser";
-        }
-
         [RelayCommand]
         void SelectInputFile()
         {
@@ -119,6 +114,7 @@ namespace TextReverserWPF.ViewModel
                     return;
                 }
 
+                ReverserData.ReverseType = ReverseTypeSelected;
                 ReverserData.ReverseType = ReverserData.ReverseType.ToLower();
 
                 if (ReverserData.OutputFile == "" || ReverserData.OutputFile == null)
@@ -208,6 +204,8 @@ namespace TextReverserWPF.ViewModel
                     MessageBox.Show(errorMessage, "Alert", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
+
+                ReverserData.ReverseType = ReverseTypeSelected;
                 UiEnabled = false;
                 ReverserData.ReverseType = ReverserData.ReverseType.ToLower();
 
