@@ -61,20 +61,18 @@
                 <StackPanel 
                     HorizontalAlignment="Center" 
                     Orientation="Horizontal" 
-                    Visibility="{Binding IsCheckBoxVisible}">
+                    Visibility="{Binding IsCheckBoxVisible}" Margin="0,10,0,0">
                     <Label
                         Padding="5,0,0,0"
                         FontSize="10"
                         HorizontalAlignment="Center"
                         Content="Видалити знаки"
-                        IsEnabled="{Binding UiEnabled, Mode=TwoWay}"
                         />
                     <CheckBox 
                         HorizontalAlignment="Center"
                         x:Name="HideButtonCheckBox" 
                         IsChecked="{Binding ReverserData.RemoveSigns}"
-                        
-                        Visibility="{Binding IsCheckBoxVisible}"
+                        IsEnabled="{Binding UiEnabled, Mode=TwoWay}" Margin="10,0,0,0"
                     />
                 </StackPanel>
             </StackPanel>

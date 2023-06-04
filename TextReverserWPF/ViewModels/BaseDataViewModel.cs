@@ -42,8 +42,7 @@ namespace TextReverserWPF.ViewModel
         string timeLeft;
  
         public Visibility IsCheckBoxVisible => 
-            (ReverserData?.ReverseType == "Word" 
-                                            ? System.Windows.Visibility.Visible 
-                                            : System.Windows.Visibility.Collapsed);
+            (System.Windows.Visibility.Visible 
+                                           );
     }
 }
