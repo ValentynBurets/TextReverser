@@ -139,7 +139,7 @@ namespace TextReverser.ViewModel
                 Action<double, TimeSpan> updateProgress = (double newProgress, TimeSpan timeLeft) =>
                 {
                     Progress += newProgress;
-                    TimeLeft = timeLeft;
+                    TimeLeft = timeLeft.ToString();
                 };
 
                 if (string.IsNullOrEmpty(ReverserData.ReverseType) || string.IsNullOrEmpty(ReverserData.InputDirectory))

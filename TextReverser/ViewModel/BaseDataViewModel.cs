@@ -32,7 +32,7 @@ namespace TextReverser.ViewModel
 
 
         [ObservableProperty]
-        TimeSpan timeLeft;
+        string timeLeft;
 
 
         public bool IsCheckBoxVisible => ReverserData?.ReverseType == "Word";
