@@ -87,8 +87,7 @@ namespace FileProcessor
                         stopWatchPortionTime.Stop();
                         updateFileSizeLeft(portionSize);
 
-                        double portionSizeInKilobites = (double)portionSize / 1024;
-                        double timeSpentToReverse = stopWatchPortionTime.ElapsedMilliseconds / portionSizeInKilobites;
+                        double timeSpentToReverse = (double)stopWatchPortionTime.ElapsedMilliseconds * 1024 / portionSize;
                         reversalTimeOfTenKiloBites.Add(timeSpentToReverse);
 
                         updateTimeSpent(stopWatchProces.Elapsed);
@@ -167,7 +166,7 @@ namespace FileProcessor
                 {
                     double averageValue;
 
-                    if (reversalTimeOfTenKiloBitesCount < 3000)
+                    if (reversalTimeOfTenKiloBitesCount < 2000)
                     {
                         averageValue = reversalTimeOfTenKiloBites
                                                     .Where(item => !double.IsInfinity(item))
@@ -181,7 +180,7 @@ namespace FileProcessor
                                                     .Average();
                     }
 
-                    TimeSpan averageTimeSpan = TimeSpan.FromMilliseconds(averageValue / 5 * (totalSizeLeft / 1024));
+                    TimeSpan averageTimeSpan = TimeSpan.FromMilliseconds(averageValue * (totalSizeLeft / 1024));
 
                     updateTimeLeftLable(averageTimeSpan);
                 }
@@ -228,8 +227,8 @@ namespace FileProcessor
                     {
                         //Regex regexLetters = new Regex(@"[^\p{L}0-9\s]");
                         //string textWithoutSigns = regexLetters.Replace(text, "");
-
-                        Regex regexForWords2 = new Regex(@"[^\p{L}]*\p{Z}[^\p{L}]*");
+                        Regex regexForWords2 = new Regex(@"[^\p{L}\p{IsCJKUnifiedIdeographs}]+");
+                        //Regex regexForWords2 = new Regex(@"[^\p{L}]*\p{Z}[^\p{L}]*");
                         string textWithoutSigns = regexForWords2.Replace(text, " ");
                       
 
@@ -250,8 +249,9 @@ namespace FileProcessor
                             {
                                 if (charArray[i] == '\n' && i - 1 >= 0 && charArray[i - 1] == '\r')
                                 {
-                                    newCharArray.Add('\r');
-                                    newCharArray.Add('\n');
+                                    newCharArray.AddRange(Environment.NewLine);
+                                    //newCharArray.Add('\r');
+                                    //newCharArray.Add('\n');
                                     i--;
                                 }
                                 else
@@ -267,19 +267,24 @@ namespace FileProcessor
                     }
                 case "word":
                     //regular exprethion for deleting sings
-                    Regex regexForWords = new Regex(@"[^\p{L}]*\p{Z}[^\p{L}]*");
+                    //Regex regexForWords = new Regex(@"[^\p{L}]*\p{Z}[^\p{L}]*");
+                    Regex regexForWords = new Regex(@"[^\p{L}\p{IsCJKUnifiedIdeographs}]+");
+                    //Regex regexForWords = new Regex(@"[^\p{L}\p{IsCJKUnifiedIdeographs}\p{IsHiragana}\p{IsKatakana}\p{IsCJKSymbolsAndPunctuation}]*\p{Z}[^\p{L}\p{IsCJKUnifiedIdeographs}\p{IsHiragana}\p{IsKatakana}\p{IsCJKSymbolsAndPunctuation}]*");
 
                     //regular expretion for splitiong into words
-                    Regex regexSplitByWords = new Regex(@"\p{Z}+");
-                    
+                    //Regex regexSplitByWords = new Regex(@"\p{Z}+");
+                    Regex regexSplitByWords = new Regex(@"[\p{Z}\p{IsHiragana}\p{IsKatakana}ー]+");
+
                     //regular expretion for detecting non-letter signs
                     Regex regexNonLetter = new Regex(@"[a-zA-Z]");
 
                     //end of sentence or punctuation marck
-                    Regex regexForPunctuationAndSentence = new Regex(@"[\.!\?…⁉️⁈‼️⁇,:;]");
+                    Regex regexForPunctuationAndSentence = new Regex(@"[\.!\?…⁉️⁈‼️⁇,:;\r\n]");
+                    //Regex regexForPunctuationAndSentence = new Regex(@"[\.!\?…⁉️⁈‼️⁇,:;。！？…⸮、：；　「」『』【】《》〈〉〔〕〖〗〘〙〚〛〜～〿〾〽〼〻〺〩〨〧〦〥〤〣〢〡〟〞〝〜〛〚〙〘〗〖〕〔〓〒】【』『」「》《〉〈《》【】『』「」。！？⸮、：；]");
 
                     //letters, numbers and signs(end of sentence or punctuation marcks)
-                    Regex regexForSignsAndLetters = new Regex(@"[\.!\?…⁉️⁈‼️⁇,:;'`’""-_0-9]|[a-zA-Z]");
+                    //Regex regexForSignsAndLetters = new Regex(@"[\.!\?…⁉️⁈‼️⁇,:;'`’""-_0-9]|[a-zA-Z]");
+                    Regex regexForSignsAndLetters = new Regex(@"[\.!\?…⁉️⁈‼️⁇,:;'`’""-_0-9\r\n]|[a-zA-Z]|[\u4E00-\u9FFF\u3040-\u309F\u30A0-\u30FF]");
 
                     string[] words;
                     
