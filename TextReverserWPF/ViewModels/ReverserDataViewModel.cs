@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -114,11 +115,26 @@ namespace TextReverserWPF.ViewModel
                 ReverserData.ReverseType = ReverserData.ReverseType.ToLower();
                 var fileInfo = new FileInfo(ReverserData.InputFile);
                 ReverserData.ExtensionType = fileInfo.Extension;
+                ReverserData.AdditionalSigns = AdditionalSigns;
 
                 if (ReverserData.OutputFile == "" || ReverserData.OutputFile == null)
                 {
                     string inputFileName = Path.GetFileNameWithoutExtension(ReverserData.InputFile);
-                    ReverserData.OutputFile = $"{Path.GetDirectoryName(ReverserData.InputFile)}/I{ReverserData.ReverseType[0]}_{inputFileName}{ReverserData.ExtensionType}";
+                    ReverserData.OutputFile = Path.Combine(Path.GetDirectoryName(ReverserData.InputFile), $"I{ReverserData.ReverseType[0]}_{inputFileName}{ReverserData.ExtensionType}");
+
+                    int index = 1;
+                    var tempFolderPath = new StringBuilder(ReverserData.OutputFile);
+
+                    while (File.Exists(tempFolderPath.ToString()))
+                    {
+                        ++index;
+                        tempFolderPath.Clear();
+                        tempFolderPath.Append($"{Path.GetDirectoryName(ReverserData.InputFile)}/I{ReverserData.ReverseType[0]}_{inputFileName}_{index}");
+                    }
+                    if(index >= 2)
+                    {
+                        ReverserData.OutputFile = $"{Path.GetDirectoryName(ReverserData.InputFile)}/I{ReverserData.ReverseType[0]}_{inputFileName}_{index}{ReverserData.ExtensionType}";
+                    }
                 }
 
                 long totalSizeLeft = fileInfo.Length;
@@ -228,6 +244,7 @@ namespace TextReverserWPF.ViewModel
                 ReverserData.ReverseType = ReverseTypeSelected;
                 UiEnabled = false;
                 ReverserData.ReverseType = ReverserData.ReverseType.ToLower();
+                ReverserData.AdditionalSigns = AdditionalSigns;
 
                 if (ReverserData.OutputFile == "" || ReverserData.OutputFile == null)
                 {
@@ -238,7 +255,7 @@ namespace TextReverserWPF.ViewModel
                 // Start a new thread or use a Task to call the ProcessFile method
                 await FileProcessorWorker.ProcessDirectory(ReverserData, updateProgress, updateTimeLeftLable, stopWatchProces, updateTimeSpent);
                 
-                if (Progress >= 1)
+                if (Progress >= 0.95)
                 {
                     MessageBox.Show("Папку інвертовано", "Іноформація", MessageBoxButton.OK, MessageBoxImage.Information);
                     
