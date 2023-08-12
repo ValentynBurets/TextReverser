@@ -70,7 +70,7 @@ namespace FileProcessor
                         string portionText = ReadFilePortion(reverserData.InputFile, startPosition, endPosition);
 
                         // Step 5c: Reverse the text of the portion based on `reverseType`
-                        string reversedText = ReverseText(portionText, reverserData.ReverseType, reverserData.RemoveSigns, out lexemeCount);
+                        string reversedText = ReverseText(portionText, reverserData.ReverseType, reverserData.RemoveSigns, out lexemeCount, reverserData.AdditionalSigns);
 
                         // Step 5d: Call the function for archiving and writing the reversed text portion
                         if(threadCount > 1)
@@ -148,7 +148,23 @@ namespace FileProcessor
             string[] fileNames = Directory.GetFiles(reverserData.InputDirectory);
             string oneDirectoryBackPath = Path.GetDirectoryName(reverserData.InputDirectory);
             string inputDirectoryName = Path.GetFileName(reverserData.InputDirectory);
-            string outputDirectoryPath = Path.Combine(oneDirectoryBackPath, $"I{reverserData.ReverseType[0]}_{inputDirectoryName}_{DateTime.Now.Second}");
+            string outputDirectoryPath = Path.Combine(oneDirectoryBackPath, $"I{reverserData.ReverseType[0]}_{inputDirectoryName}");
+
+            int index = 1;
+            var tempFolderPath = new StringBuilder(outputDirectoryPath);
+
+            while (Directory.Exists(Path.Combine(oneDirectoryBackPath, tempFolderPath.ToString())))
+            {
+                index++;
+                tempFolderPath.Clear();
+                tempFolderPath.Append(outputDirectoryPath + "_" + index);
+            }
+
+            if(index >= 2)
+            {
+                outputDirectoryPath += "_" + index;
+            }
+
             Directory.CreateDirectory(outputDirectoryPath);
             
             DirectoryInfo directoryInfo = new DirectoryInfo(reverserData.InputDirectory);
@@ -218,7 +234,7 @@ namespace FileProcessor
         }
 
 
-        public static string ReverseText(string text, string reverseType, bool removeSigns, out int lexemeCount)
+        public static string ReverseText(string text, string reverseType, bool removeSigns, out int lexemeCount, string additionalSigns)
         {
             switch (reverseType)
             {
@@ -279,12 +295,23 @@ namespace FileProcessor
                     Regex regexNonLetter = new Regex(@"[a-zA-Z]");
 
                     //end of sentence or punctuation marck
-                    Regex regexForPunctuationAndSentence = new Regex(@"[\.!\?…⁉️⁈‼️⁇,:;\r\n]");
+                    var rexExpForPunctuationAndSentenceTepmString = new StringBuilder("");
+                    rexExpForPunctuationAndSentenceTepmString.Append("['\'.!'\'?…⁉️⁈‼️⁇,:;\r\n");
+                    rexExpForPunctuationAndSentenceTepmString.Append(additionalSigns.Replace(" ", ""));
+                    rexExpForPunctuationAndSentenceTepmString.Append("]");
+                    Regex regexForPunctuationAndSentence = new Regex(@rexExpForPunctuationAndSentenceTepmString.ToString());
                     //Regex regexForPunctuationAndSentence = new Regex(@"[\.!\?…⁉️⁈‼️⁇,:;。！？…⸮、：；　「」『』【】《》〈〉〔〕〖〗〘〙〚〛〜～〿〾〽〼〻〺〩〨〧〦〥〤〣〢〡〟〞〝〜〛〚〙〘〗〖〕〔〓〒】【』『」「》《〉〈《》【】『』「」。！？⸮、：；]");
 
                     //letters, numbers and signs(end of sentence or punctuation marcks)
                     //Regex regexForSignsAndLetters = new Regex(@"[\.!\?…⁉️⁈‼️⁇,:;'`’""-_0-9]|[a-zA-Z]");
-                    Regex regexForSignsAndLetters = new Regex(@"[\.!\?…⁉️⁈‼️⁇,:;'`’""-_0-9\r\n]|[a-zA-Z]|[\u4E00-\u9FFF\u3040-\u309F\u30A0-\u30FF]");
+
+                    var regexForSignsAndLettersTempString = new StringBuilder("");
+                    regexForSignsAndLettersTempString.Append("['\'.!'\'?…⁉️⁈‼️⁇,:;'`’\"\"-_0-9\r\n");
+                    regexForSignsAndLettersTempString.Append(additionalSigns.Replace(" ", ""));
+                    regexForSignsAndLettersTempString.Append("]|");
+                    regexForSignsAndLettersTempString.Append("[a-zA-Z]|[\\u4E00-\\u9FFF\\u3040-\\u309F\\u30A0-\\u30FF]");
+
+                    Regex regexForSignsAndLetters = new Regex(@regexForSignsAndLettersTempString.ToString());
 
                     string[] words;
                     

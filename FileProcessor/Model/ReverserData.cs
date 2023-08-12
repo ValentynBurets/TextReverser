@@ -13,6 +13,8 @@ namespace FileProcessor.Model
             InputFile = "";
             OutputFile = "";
             InputDirectory = "";
+            AdditionalSigns = "";
+            ExtensionType = "";
         }
         public string ReverseType { get; set; }
         public string ArchiveType { get; set; }
@@ -20,7 +22,7 @@ namespace FileProcessor.Model
         public string InputDirectory { get; set; }
         public string OutputFile { get; set; }
         public bool RemoveSigns { get; set; }
-      
+        public string AdditionalSigns { get; set; }
         public string ExtensionType { get; set; }
     }
 

@@ -3,8 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:TextReverserWPF"
+        xmlns:vm="clr-namespace:TextReverserWPF.ViewModel"
+        xmlns:local="clr-namespace:TextReverserWPF" 
         mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:ReverserDataViewModel}"
         Title="Текстовий інвертор" Height="500" Width="500">
     <Grid Background="#FFE5E5E5" VerticalAlignment="Center" Height="496">
         <Grid.RowDefinitions>
@@ -76,6 +78,20 @@
                         IsEnabled="{Binding UiEnabled, Mode=TwoWay}" Margin="10,0,0,0"
                     />
                 </StackPanel>
+                <Label
+                    Padding="5,0,0,0"
+                    FontSize="10"
+                    HorizontalAlignment="Center"
+                    Content="Додати стоп символи"
+                />
+                <TextBox
+                    Padding="5,0,0,0"
+                    FontSize="10"
+                    Width="135"
+                    HorizontalAlignment="Center"
+                    IsEnabled="{Binding UiEnabled, Mode=TwoWay}"
+                    Text="{Binding AdditionalSigns, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    />
             </StackPanel>
         </GroupBox>
         <GroupBox Header="Інвертування" BorderBrush="Gray" Margin="27,300,27,17" Grid.RowSpan="2">

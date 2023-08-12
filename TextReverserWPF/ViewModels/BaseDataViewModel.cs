@@ -16,6 +16,7 @@ namespace TextReverserWPF.ViewModel
             reverserData.ReverseType = "Char";
             reverserData.ArchiveType = "none";
             timeLeft = String.Empty;
+            additionalSigns = String.Empty;
         }
 
         [ObservableProperty]
@@ -33,6 +34,9 @@ namespace TextReverserWPF.ViewModel
 
         [ObservableProperty]
         string inputDirectoryNameText;
+
+        [ObservableProperty]
+        string additionalSigns;
 
         [ObservableProperty]
         double progress;
