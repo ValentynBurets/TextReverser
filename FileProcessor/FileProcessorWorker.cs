@@ -241,12 +241,9 @@ namespace FileProcessor
                 case "char":
                     if (removeSigns)
                     {
-                        //Regex regexLetters = new Regex(@"[^\p{L}0-9\s]");
-                        //string textWithoutSigns = regexLetters.Replace(text, "");
-                        Regex regexForWords2 = new Regex(@"[^\p{L}\p{IsCJKUnifiedIdeographs}]+");
-                        //Regex regexForWords2 = new Regex(@"[^\p{L}]*\p{Z}[^\p{L}]*");
-                        string textWithoutSigns = regexForWords2.Replace(text, " ");
-                      
+                        Regex regexForPunctuation = new Regex(@"\p{P}");
+
+                        string textWithoutSigns = regexForPunctuation.Replace(text, "");
 
                         char[] resCharArray = textWithoutSigns.ToCharArray();
                         Array.Reverse(resCharArray);
@@ -266,8 +263,6 @@ namespace FileProcessor
                                 if (charArray[i] == '\n' && i - 1 >= 0 && charArray[i - 1] == '\r')
                                 {
                                     newCharArray.AddRange(Environment.NewLine);
-                                    //newCharArray.Add('\r');
-                                    //newCharArray.Add('\n');
                                     i--;
                                 }
                                 else
@@ -283,22 +278,19 @@ namespace FileProcessor
                     }
                 case "word":
                     //regular exprethion for deleting sings
-                    //Regex regexForWords = new Regex(@"[^\p{L}]*\p{Z}[^\p{L}]*");
                     Regex regexForWords = new Regex(@"[^\p{L}\p{IsCJKUnifiedIdeographs}]+");
-                    //Regex regexForWords = new Regex(@"[^\p{L}\p{IsCJKUnifiedIdeographs}\p{IsHiragana}\p{IsKatakana}\p{IsCJKSymbolsAndPunctuation}]*\p{Z}[^\p{L}\p{IsCJKUnifiedIdeographs}\p{IsHiragana}\p{IsKatakana}\p{IsCJKSymbolsAndPunctuation}]*");
-
+                   
                     //regular expretion for splitiong into words
-                    //Regex regexSplitByWords = new Regex(@"\p{Z}+");
-                    Regex regexSplitByWords = new Regex(@"[\p{Z}\p{IsHiragana}\p{IsKatakana}ー]+");
+                    Regex regexSplitByWords = new Regex(@"[\p{Z}]+");
 
                     //regular expretion for detecting non-letter signs
                     Regex regexNonLetter = new Regex(@"[a-zA-Z]");
 
                     //end of sentence or punctuation marck
                     var rexExpForPunctuationAndSentenceTepmString = new StringBuilder("");
-                    rexExpForPunctuationAndSentenceTepmString.Append("['\'.!'\'?…⁉️⁈‼️⁇,:;\r\n");
+                    rexExpForPunctuationAndSentenceTepmString.Append("[.!?…⁉️⁈‼️⁇,:;\r\n");
                     rexExpForPunctuationAndSentenceTepmString.Append(additionalSigns.Replace(" ", ""));
-                    rexExpForPunctuationAndSentenceTepmString.Append("]");
+                    rexExpForPunctuationAndSentenceTepmString.Append("]+");
                     Regex regexForPunctuationAndSentence = new Regex(@rexExpForPunctuationAndSentenceTepmString.ToString());
                     //Regex regexForPunctuationAndSentence = new Regex(@"[\.!\?…⁉️⁈‼️⁇,:;。！？…⸮、：；　「」『』【】《》〈〉〔〕〖〗〘〙〚〛〜～〿〾〽〼〻〺〩〨〧〦〥〤〣〢〡〟〞〝〜〛〚〙〘〗〖〕〔〓〒】【』『」「》《〉〈《》【】『』「」。！？⸮、：；]");
 
@@ -306,12 +298,13 @@ namespace FileProcessor
                     //Regex regexForSignsAndLetters = new Regex(@"[\.!\?…⁉️⁈‼️⁇,:;'`’""-_0-9]|[a-zA-Z]");
 
                     var regexForSignsAndLettersTempString = new StringBuilder("");
-                    regexForSignsAndLettersTempString.Append("['\'.!'\'?…⁉️⁈‼️⁇,:;'`’\"\"-_0-9\r\n");
+                    regexForSignsAndLettersTempString.Append("[.!?,:;'`’\"\"-_0-9\r\n");
                     regexForSignsAndLettersTempString.Append(additionalSigns.Replace(" ", ""));
                     regexForSignsAndLettersTempString.Append("]|");
-                    regexForSignsAndLettersTempString.Append("[a-zA-Z]|[\\u4E00-\\u9FFF\\u3040-\\u309F\\u30A0-\\u30FF]");
 
-                    Regex regexForSignsAndLetters = new Regex(@regexForSignsAndLettersTempString.ToString());
+                    regexForSignsAndLettersTempString.Append(@"[\p{IsArabic}\p{IsCJKUnifiedIdeographs}\p{IsCyrillic}\p{IsHebrew}\p{IsHiragana}\p{IsKatakana}\p{IsDevanagari}\p{IsTelugu}\p{IsThai}]+");
+
+                    Regex regexForSignsAndLetters = new Regex(regexForSignsAndLettersTempString.ToString());
 
                     string[] words;
                     
