@@ -129,7 +129,7 @@ namespace TextReverserWPF.ViewModel
                     {
                         ++index;
                         tempFolderPath.Clear();
-                        tempFolderPath.Append($"{Path.GetDirectoryName(ReverserData.InputFile)}/I{ReverserData.ReverseType[0]}_{inputFileName}_{index}");
+                        tempFolderPath.Append($"{Path.GetDirectoryName(ReverserData.InputFile)}/I{ReverserData.ReverseType[0]}_{inputFileName}_{index}{ReverserData.ExtensionType}");
                     }
                     if(index >= 2)
                     {
