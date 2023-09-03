@@ -284,7 +284,7 @@ namespace FileProcessor
                     Regex regexForWords = new Regex(@"[^\p{L}\p{IsCJKUnifiedIdeographs}]+");
 
                     //regular expression for splitting into words
-                    Regex regexSplitByWords = new Regex(@"[\p{Z}]+");
+                    Regex regexSplitByWords = new Regex(@"(\S+[\p{P}\s]*)|[\t]+|[\r\n]+");
 
                     //regular expretion for splitiong into words
                     Regex regexSplitByLineBreak = new Regex(@"[\r\n]+");
@@ -297,16 +297,14 @@ namespace FileProcessor
 
                     //end of sentence or punctuation marck
                     var rexExpForPunctuationAndSentenceTepmString = new StringBuilder("");
-                    rexExpForPunctuationAndSentenceTepmString.Append(@"[.!?…⁉️⁈‼️⁇,:;\r\n\t");
+                    rexExpForPunctuationAndSentenceTepmString.Append(@"[.!?…⁉️⁈‼️⁇,:;\r\n\t\s");
                     rexExpForPunctuationAndSentenceTepmString.Append(additionalSigns.Replace(" ", ""));
                     rexExpForPunctuationAndSentenceTepmString.Append("]+");
                     Regex regexForPunctuationAndSentence = new Regex(@rexExpForPunctuationAndSentenceTepmString.ToString());
 
                     //letters, numbers and signs(end of sentence or punctuation marcks)
-                    //Regex regexForSignsAndLetters = new Regex(@"[\.!\?…⁉️⁈‼️⁇,:;'`’""-_0-9]|[a-zA-Z]");
-
                     var regexForSignsAndLettersTempString = new StringBuilder("");
-                    regexForSignsAndLettersTempString.Append(@"[.!?…⁉️⁈‼️⁇,:;\r\n\t-_0-9'`’""]+|[");
+                    regexForSignsAndLettersTempString.Append(@"[.!?…⁉️⁈‼️⁇,:;\r\n\t\s-_0-9'`’""\t]+|[");
                     regexForSignsAndLettersTempString.Append(additionalSigns.Replace(" ", ""));
                     regexForSignsAndLettersTempString.Append("]+|");
                     regexForSignsAndLettersTempString.Append("[a-zA-Z]+|");
@@ -319,46 +317,12 @@ namespace FileProcessor
 
                     if (removeSigns)
                     {
-                        words.AddRange(regexForWords.Replace(text, " ").Split(' '));
+                        words.AddRange(regexForWords.Replace(text, "").Split(' '));
                     }
                     else
                     {
                         words.AddRange(regexSplitByWords.Split(text));
-                    }
-
-                    for (int i = words.Count - 1; i >= 0; i--)
-                    {
-                        if (regexSplitByLineBreak.IsMatch(words[i]))
-                        {
-                            string[] tempSplitedWordsByLineBreak = regexSplitByLineBreak.Split(words[i]);
-                            
-                            var breakLines = regexSplitByLineBreak.Matches(words[i]);
-
-                            if(breakLines != null)
-                            {
-                                for (int j = 0; j < tempSplitedWordsByLineBreak.Length - 1; j++)
-                                {
-                                    string appendix = Regex.Replace(breakLines[j].Value, @"\r\n", "\n\r");
-                                    tempSplitedWordsByLineBreak[j] += appendix;
-                                }
-                            }
-
-                            words.RemoveAt(i);
-                            words.InsertRange(i, tempSplitedWordsByLineBreak);
-                        }
-
-                        if (regexSplitByTab.IsMatch(words[i]))
-                        {
-                            string[] tempSplitedWordsByTab = regexSplitByTab.Split(words[i]);
-
-                            for (int j = 0; j < tempSplitedWordsByTab.Length - 1; j++)
-                            {
-                                tempSplitedWordsByTab[j] += "\t";
-                            }
-
-                            words.RemoveAt(i);
-                            words.InsertRange(i, tempSplitedWordsByTab);
-                        }
+                        words.RemoveAll(string.IsNullOrWhiteSpace);
                     }
 
                     List<string> wordesInverted = new List<string>();
@@ -370,32 +334,22 @@ namespace FileProcessor
 
                         if (matchSignsFound != null && matchSignsFound.Count >= 1)
                         {
-                            string? matchSignsList = matchSignsFound[0].Value;
-
-                            if (matchSignsList != null && matchSignsList.Length > 0)
+                            if(matchSignsFound.Count == 1)
                             {
-                                int tempEndIndex = tempWord.Length - 2;
-                                int tempWordSize = tempWord.Length - 1;
-
-                                for (int matchArrayIndex = matchSignsList.Length - 1, singsSwipedCount = 0; matchArrayIndex >= 0; matchArrayIndex--, singsSwipedCount++)
-                                {
-                                    int indexOfSign = tempWord.ToString().LastIndexOf(matchSignsList[matchArrayIndex].ToString());
-
-                                    if (indexOfSign >= tempEndIndex)
-                                    {
-                                        tempWord.Remove(indexOfSign, 1);
-                                        tempWord.Insert(tempWordSize - indexOfSign + singsSwipedCount, matchSignsList[matchArrayIndex].ToString());
-                                        tempEndIndex--;
-                                    }
-                                }
+                                BackSwipe(tempWord, matchSignsFound[0].Value);
+                            }
+                            if(matchSignsFound.Count == 2)
+                            {
+                                FrontSwipe(tempWord, matchSignsFound[0].Value);
+                                BackSwipe(tempWord, matchSignsFound[1].Value);
                             }
                         }
 
                         wordesInverted.Add(tempWord.ToString());
                     }
-                    //Array.Reverse(words);
+
                     lexemeCount = words.Count();
-                    string wordRes = string.Join(" ", wordesInverted);
+                    string wordRes = string.Join("", wordesInverted);
 
                     return wordRes.Replace("\u0000", "");
                 }
@@ -412,6 +366,48 @@ namespace FileProcessor
                 }
                 default:
                     throw new ArgumentException("Invalid reverse type.");
+            }
+        }
+
+        private static void FrontSwipe(StringBuilder tempWord, string matchSignsList)
+        {
+            if (matchSignsList != null && matchSignsList.Length > 0)
+            {
+                int tempEndIndex = tempWord.Length - 2;
+                int tempWordSize = tempWord.Length - 1;
+
+                for (int matchArrayIndex = matchSignsList.Length - 1, singsSwipedCount = 0; matchArrayIndex >= 0; matchArrayIndex--, singsSwipedCount++)
+                {
+                    int indexOfSign = tempWord.ToString().IndexOf(matchSignsList[matchArrayIndex].ToString());
+
+                    if (indexOfSign >= tempEndIndex)
+                    {
+                        tempWord.Remove(indexOfSign, 1);
+                        tempWord.Insert(tempWordSize - indexOfSign + singsSwipedCount, matchSignsList[matchArrayIndex].ToString());
+                        tempEndIndex--;
+                    }
+                }
+            }
+        }
+        
+        private static void BackSwipe(StringBuilder tempWord, string matchSignsList)
+        {
+            if (matchSignsList != null && matchSignsList.Length > 0)
+            {
+                int tempEndIndex = tempWord.Length - 2;
+                int tempWordSize = tempWord.Length - 1;
+
+                for (int matchArrayIndex = matchSignsList.Length - 1, singsSwipedCount = 0; matchArrayIndex >= 0; matchArrayIndex--, singsSwipedCount++)
+                {
+                    int indexOfSign = tempWord.ToString().LastIndexOf(matchSignsList[matchArrayIndex].ToString());
+
+                    if (indexOfSign >= tempEndIndex)
+                    {
+                        tempWord.Remove(indexOfSign, 1);
+                        tempWord.Insert(tempWordSize - indexOfSign + singsSwipedCount, matchSignsList[matchArrayIndex].ToString());
+                        tempEndIndex--;
+                    }
+                }
             }
         }
     }
