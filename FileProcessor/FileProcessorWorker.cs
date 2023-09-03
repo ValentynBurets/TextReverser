@@ -297,14 +297,14 @@ namespace FileProcessor
 
                     //end of sentence or punctuation marck
                     var rexExpForPunctuationAndSentenceTepmString = new StringBuilder("");
-                    rexExpForPunctuationAndSentenceTepmString.Append(@"[.!?…⁉️⁈‼️⁇,:;\r\n\t\s");
+                    rexExpForPunctuationAndSentenceTepmString.Append(@"[.!?…⁉️⁈‼️⁇,:;\r\n\t\s*&@#$%^()");
                     rexExpForPunctuationAndSentenceTepmString.Append(additionalSigns.Replace(" ", ""));
                     rexExpForPunctuationAndSentenceTepmString.Append("]+");
                     Regex regexForPunctuationAndSentence = new Regex(@rexExpForPunctuationAndSentenceTepmString.ToString());
 
                     //letters, numbers and signs(end of sentence or punctuation marcks)
                     var regexForSignsAndLettersTempString = new StringBuilder("");
-                    regexForSignsAndLettersTempString.Append(@"[.!?…⁉️⁈‼️⁇,:;\r\n\t\s-_0-9'`’""\t]+|[");
+                    regexForSignsAndLettersTempString.Append(@"[.!?…⁉️⁈‼️⁇,:;\r\n\t\s-_0-9'`’""\t*&@#$%^()]+|[");
                     regexForSignsAndLettersTempString.Append(additionalSigns.Replace(" ", ""));
                     regexForSignsAndLettersTempString.Append("]+|");
                     regexForSignsAndLettersTempString.Append("[a-zA-Z]+|");
